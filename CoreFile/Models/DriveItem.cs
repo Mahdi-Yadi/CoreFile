@@ -1,4 +1,4 @@
 ﻿namespace CoreFile.Models;
-internal class DriveItem
+public class DriveItem
 {
 }

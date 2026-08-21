@@ -1,12 +1,20 @@
 ﻿<Application x:Class="CoreFile.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:CoreFile"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
+        <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-        <BooleanToVisibilityConverter
-        x:Key="BooleanToVisibilityConverter"/>
-
+            <!-- مقادیر پیش‌فرض تم لایت -->
+            <SolidColorBrush x:Key="BgMain" Color="#FAFAFA"/>
+            <SolidColorBrush x:Key="BgPanel" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="BgSecondary" Color="#F3F3F3"/>
+            <SolidColorBrush x:Key="BgPreview" Color="#F9F9F9"/>
+            <SolidColorBrush x:Key="BorderColor" Color="#E5E5E5"/>
+            <SolidColorBrush x:Key="TextPrimary" Color="#222222"/>
+            <SolidColorBrush x:Key="TextSecondary" Color="#666666"/>
+            <SolidColorBrush x:Key="HoverBg" Color="#EAEAEA"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -12,13 +12,14 @@ public class FileSystemService
             if (!drive.IsReady)
                 continue;
 
+            // در بخش GetDrives:
             yield return new FileItem
             {
                 Name = $"{drive.VolumeLabel} ({drive.Name.TrimEnd('\\')})",
                 FullPath = drive.RootDirectory.FullName,
                 Type = "Drive",
                 IsDirectory = true,
-                Icon = "💽"
+                Icon = IconService.GetIcon(drive.Name, isDirectory: true)
             };
         }
     }
@@ -35,13 +36,14 @@ public class FileSystemService
             {
                 try
                 {
+                    // در بخش پوشه‌ها:
                     result.Add(new FileItem
                     {
                         Name = directoryInfo.Name,
                         FullPath = directoryInfo.FullName,
                         Type = "Folder",
                         IsDirectory = true,
-                        Icon = "📁",
+                        Icon = IconService.GetIcon(directoryInfo.FullName, isDirectory: true),
                         CreatedDate = directoryInfo.CreationTime,
                         ModifiedDate = directoryInfo.LastWriteTime
                     });
@@ -56,6 +58,7 @@ public class FileSystemService
             {
                 try
                 {
+                    // در بخش فایل‌ها:
                     result.Add(new FileItem
                     {
                         Name = file.Name,
@@ -64,12 +67,9 @@ public class FileSystemService
                         Type = string.IsNullOrWhiteSpace(file.Extension)
                             ? "File"
                             : file.Extension.TrimStart('.').ToUpperInvariant(),
-
                         SizeText = FormatSize(file.Length),
-
                         IsDirectory = false,
-                        Icon = "📄",
-
+                        Icon = IconService.GetIcon(file.FullName, isDirectory: false),
                         CreatedDate = file.CreationTime,
                         ModifiedDate = file.LastWriteTime
                     });

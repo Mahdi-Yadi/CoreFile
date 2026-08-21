@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Windows.Media;
 
 namespace CoreFile.Models;
 
@@ -29,5 +30,5 @@ public partial class FileItem : ObservableObject
     private bool isDirectory;
 
     [ObservableProperty]
-    private string icon = string.Empty;
+    private ImageSource? icon;
 }
