@@ -1,8 +1,6 @@
 ﻿using CoreFile.Models;
 using System.IO;
-
 namespace CoreFile.Services;
-
 public class FileSystemService
 {
     public IEnumerable<FileItem> GetDrives()

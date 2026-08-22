@@ -1,11 +1,7 @@
 ﻿using System.IO;
-
 namespace CoreFile.Services;
-
 public enum OperationType { Copy, Cut }
-
 public record ClipboardState(List<string> SourcePaths, OperationType Type);
-
 public class FileOperationService
 {
     // کپی/انتقال پوشه و فایل به صورت کاملاً Async همراه با Progress

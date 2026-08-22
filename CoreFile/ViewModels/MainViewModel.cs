@@ -14,9 +14,7 @@ namespace CoreFile.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly FileSystemService _fileSystemService;
-
     private readonly Stack<string> _backHistory = new();
-
     private readonly Stack<string> _forwardHistory = new();
 
     [ObservableProperty]
@@ -25,6 +23,10 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private FileItem? selectedItem;
 
+    // پراپرتی جدید جهت ذخیره آیتم‌های انتخابی چندتایی
+    [ObservableProperty]
+    private List<FileItem> selectedItems = [];
+
     [ObservableProperty]
     private bool isLoading;
 
@@ -32,14 +34,11 @@ public partial class MainViewModel : ObservableObject
     private string statusText = "Ready";
 
     public ObservableCollection<FileItem> Drives { get; } = [];
-
     public ObservableCollection<FileItem> Items { get; } = [];
-
 
     public MainViewModel()
     {
         _fileSystemService = new FileSystemService();
-
         LoadDrives();
     }
 
@@ -57,7 +56,6 @@ public partial class MainViewModel : ObservableObject
             EnableRaisingEvents = true
         };
 
-        // به دلیل اجرا روی Background Thread باید به Main UI Thread منتقل شود
         _watcher.Created += (s, e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
         _watcher.Deleted += (s, e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
         _watcher.Renamed += (s, e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
@@ -75,18 +73,14 @@ public partial class MainViewModel : ObservableObject
         StatusText = $"{Drives.Count} Drives";
     }
 
-
     [RelayCommand]
     private async Task OpenDriveAsync(FileItem? drive)
     {
         if (drive is null)
             return;
 
-        await NavigateToAsync(
-            drive.FullPath,
-            addToHistory: true);
+        await NavigateToAsync(drive.FullPath, addToHistory: true);
     }
-
 
     [RelayCommand]
     private async Task OpenItemAsync(FileItem? item)
@@ -96,41 +90,29 @@ public partial class MainViewModel : ObservableObject
 
         if (item.IsDirectory)
         {
-            await NavigateToAsync(
-                item.FullPath,
-                addToHistory: true);
-
+            await NavigateToAsync(item.FullPath, addToHistory: true);
             return;
         }
 
         OpenFile(item.FullPath);
     }
 
-
-    private async Task NavigateToAsync(
-        string path,
-        bool addToHistory)
+    private async Task NavigateToAsync(string path, bool addToHistory)
     {
         if (!Directory.Exists(path))
             return;
 
-        if (string.Equals(
-                CurrentPath,
-                path,
-                StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(CurrentPath, path, StringComparison.OrdinalIgnoreCase))
         {
             await RefreshAsync();
             return;
         }
 
-        if (addToHistory &&
-            !string.IsNullOrWhiteSpace(CurrentPath))
+        if (addToHistory && !string.IsNullOrWhiteSpace(CurrentPath))
         {
             _backHistory.Push(CurrentPath);
         }
 
-        // وقتی مسیر جدیدی انتخاب می‌کنیم
-        // Forward باید پاک شود.
         if (addToHistory)
         {
             _forwardHistory.Clear();
@@ -139,13 +121,11 @@ public partial class MainViewModel : ObservableObject
         await LoadDirectoryAsync(path);
     }
 
-
     private async Task LoadDirectoryAsync(string path)
     {
         try
         {
             IsLoading = true;
-
             StatusText = "Loading...";
 
             var items = await Task.Run(() =>
@@ -161,6 +141,7 @@ public partial class MainViewModel : ObservableObject
             }
 
             CurrentPath = path;
+            SetupWatcher(path);
 
             StatusText = $"{Items.Count} Items";
         }
@@ -169,7 +150,6 @@ public partial class MainViewModel : ObservableObject
             IsLoading = false;
         }
     }
-
 
     [RelayCommand]
     private async Task GoBackAsync()
@@ -187,7 +167,6 @@ public partial class MainViewModel : ObservableObject
         await LoadDirectoryAsync(previousPath);
     }
 
-
     [RelayCommand]
     private async Task GoForwardAsync()
     {
@@ -204,7 +183,6 @@ public partial class MainViewModel : ObservableObject
         await LoadDirectoryAsync(nextPath);
     }
 
-
     [RelayCommand]
     private async Task RefreshAsync()
     {
@@ -216,7 +194,6 @@ public partial class MainViewModel : ObservableObject
 
         await LoadDirectoryAsync(CurrentPath);
     }
-
 
     private static void OpenFile(string path)
     {
@@ -233,7 +210,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            // در مراحل بعدی NotificationService اضافه می‌کنیم.
+            // NotificationService
         }
     }
 
@@ -247,40 +224,42 @@ public partial class MainViewModel : ObservableObject
     private CancellationTokenSource? _cts;
     private readonly FileOperationService _fileOperationService = new();
 
+    // پشتیبانی از کپی چندتایی
     [RelayCommand]
-    private void Copy(FileItem? item)
+    private void Copy()
     {
-        if (item is null) return;
+        var targets = SelectedItems.Count > 0 ? SelectedItems : (SelectedItem != null ? [SelectedItem] : new List<FileItem>());
+        if (targets.Count == 0) return;
 
-        // ۱. ذخیره در حافظه داخلی برنامه
-        _clipboard = new ClipboardState([item.FullPath], OperationType.Copy);
+        var paths = targets.Select(x => x.FullPath).ToArray();
 
-        // ۲. ارسال به کلیپ‌بورد ویندوز برای Paste شدن روی Desktop و سایر برنامه‌ها
-        var data = new DataObject(DataFormats.FileDrop, new[] { item.FullPath });
+        _clipboard = new ClipboardState(paths.ToList(), OperationType.Copy);
+
+        var data = new DataObject(DataFormats.FileDrop, paths);
         Clipboard.SetDataObject(data, true);
 
-        StatusText = $"Copied '{item.Name}' to clipboard.";
+        StatusText = $"Copied {paths.Length} item(s) to clipboard.";
     }
 
+    // پشتیبانی از Cut چندتایی
     [RelayCommand]
-    private void Cut(FileItem? item)
+    private void Cut()
     {
-        if (item is null) return;
+        var targets = SelectedItems.Count > 0 ? SelectedItems : (SelectedItem != null ? [SelectedItem] : new List<FileItem>());
+        if (targets.Count == 0) return;
 
-        // ۱. ذخیره در حافظه داخلی برنامه
-        _clipboard = new ClipboardState([item.FullPath], OperationType.Cut);
+        var paths = targets.Select(x => x.FullPath).ToArray();
 
-        // ۲. ارسال به کلیپ‌بورد ویندوز با پرچم (Flag) مربوط به Cut/Move
-        var data = new DataObject(DataFormats.FileDrop, new[] { item.FullPath });
+        _clipboard = new ClipboardState(paths.ToList(), OperationType.Cut);
 
-        // مشخص کردن حالت Cut برای ویندوز
+        var data = new DataObject(DataFormats.FileDrop, paths);
         byte[] moveEffect = [2, 0, 0, 0]; // 2 = PreferredDropEffect: Move
         var memoryStream = new MemoryStream(moveEffect);
         data.SetData("Preferred DropEffect", memoryStream);
 
         Clipboard.SetDataObject(data, true);
 
-        StatusText = $"Cut '{item.Name}' to clipboard.";
+        StatusText = $"Cut {paths.Length} item(s) to clipboard.";
     }
 
     [RelayCommand]
@@ -291,7 +270,6 @@ public partial class MainViewModel : ObservableObject
         List<string> sourcePaths = [];
         OperationType operation = OperationType.Copy;
 
-        // ۱. ابتدا بررسی کلیپ‌بورد سیستم‌عامل (ویندوز)
         if (Clipboard.ContainsFileDropList())
         {
             var fileList = Clipboard.GetFileDropList();
@@ -301,17 +279,15 @@ public partial class MainViewModel : ObservableObject
                     sourcePaths.Add(file);
             }
 
-            // بررسی اینکه آیا عملیات Cut بوده یا Copy
             if (Clipboard.GetData("Preferred DropEffect") is MemoryStream stream)
             {
                 byte[] bytes = stream.ToArray();
-                if (bytes.Length > 0 && bytes[0] == 2) // 2 یعنی Move/Cut
+                if (bytes.Length > 0 && bytes[0] == 2)
                 {
                     operation = OperationType.Cut;
                 }
             }
         }
-        // ۲. اگر کلیپ‌بورد ویندوز خالی بود، از حافظه داخلی استفاده کن
         else if (_clipboard is not null)
         {
             sourcePaths = _clipboard.SourcePaths;
@@ -331,7 +307,7 @@ public partial class MainViewModel : ObservableObject
             if (operation == OperationType.Cut)
             {
                 _clipboard = null;
-                Clipboard.Clear(); // پاکسازی کلیپ‌بورد بعد از Cut
+                Clipboard.Clear();
             }
 
             await RefreshAsync();
@@ -351,24 +327,35 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    // پشتیبانی از حذف چندتایی
     [RelayCommand]
-    private async Task DeleteAsync(FileItem? item)
+    private async Task DeleteAsync()
     {
-        if (item is null) return;
+        var targets = SelectedItems.Count > 0 ? SelectedItems : (SelectedItem != null ? [SelectedItem] : new List<FileItem>());
+        if (targets.Count == 0) return;
 
-        // استفاده از Recycle Bin به جای File.Delete
-        bool success = await Task.Run(() => RecycleBinService.SendToRecycleBin(item.FullPath));
+        int successCount = 0;
+        await Task.Run(() =>
+        {
+            foreach (var item in targets.ToList())
+            {
+                if (RecycleBinService.SendToRecycleBin(item.FullPath))
+                {
+                    successCount++;
+                }
+            }
+        });
 
-        if (success)
+        if (successCount > 0)
         {
             await RefreshAsync();
+            StatusText = $"{successCount} item(s) moved to Recycle Bin.";
         }
         else
         {
-            StatusText = $"خطا در انتقال {item.Name} به سطل زباله";
+            StatusText = "Error deleting selected item(s).";
         }
     }
-
 
     [RelayCommand]
     private async Task CreateFolderAsync()
@@ -388,24 +375,33 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task RenameAsync(FileItem? item)
+    private async Task RenameAsync(Tuple<FileItem, string>? param)
     {
-        if (item is null) return;
+        if (param is null) return;
+        var (item, newName) = param;
 
-        // در گام بعدی می‌توانید یک Dialog UI برای دریافت نام جدید طراحی کنید
-        // نمونه منطق تغییر نام:
+        if (string.IsNullOrWhiteSpace(newName) || newName == item.Name) return;
+
         string? parent = Path.GetDirectoryName(item.FullPath);
         if (parent is null) return;
 
-        string newName = "NewName"; // دریافت نام از UI Dialog
-        string newPath = Path.Combine(parent, newName + item.Extension);
+        string newPath = item.IsDirectory
+            ? Path.Combine(parent, newName)
+            : Path.Combine(parent, newName + item.Extension);
 
-        if (item.IsDirectory)
-            Directory.Move(item.FullPath, newPath);
-        else
-            File.Move(item.FullPath, newPath);
+        try
+        {
+            if (item.IsDirectory)
+                Directory.Move(item.FullPath, newPath);
+            else
+                File.Move(item.FullPath, newPath);
 
-        await RefreshAsync();
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Error renaming: {ex.Message}";
+        }
     }
 
     [ObservableProperty]
@@ -422,8 +418,10 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private bool isTextPreview;
+
     [ObservableProperty]
     private bool isMediaPreview;
+
     partial void OnSelectedItemChanged(FileItem? value)
     {
         _ = LoadPreviewAsync(value);
@@ -446,7 +444,6 @@ public partial class MainViewModel : ObservableObject
         IsPreviewVisible = true;
         string ext = item.Extension.ToLowerInvariant();
 
-        // ۱. تصاویر
         string[] imageExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp"];
         if (imageExtensions.Contains(ext))
         {
@@ -455,7 +452,6 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        // ۲. فایل‌های متنی
         string[] textExtensions = [".txt", ".json", ".xml", ".cs", ".log", ".md", ".css", ".js"];
         if (textExtensions.Contains(ext))
         {
@@ -482,7 +478,6 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        // ۳. فایل‌های ویدئویی و صوتی (نمایش کارت مشخصات)
         string[] mediaExtensions = [".mp4", ".mkv", ".avi", ".mov", ".mp3", ".wav"];
         if (mediaExtensions.Contains(ext))
         {
@@ -490,7 +485,6 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    // لود ایمن تصویر بدون قفل کردن فایل روی دیسک
     private static BitmapImage? LoadBitmapImage(string filePath)
     {
         try
@@ -498,8 +492,8 @@ public partial class MainViewModel : ObservableObject
             var bitmap = new BitmapImage();
             bitmap.BeginInit();
             bitmap.UriSource = new Uri(filePath);
-            bitmap.CacheOption = BitmapCacheOption.OnLoad; // عدم Lock شدن فایل
-            bitmap.DecodePixelWidth = 800; // کاهش سایز جهت بهینه‌سازی حافظه
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.DecodePixelWidth = 800;
             bitmap.EndInit();
             bitmap.Freeze();
             return bitmap;
@@ -541,4 +535,53 @@ public partial class MainViewModel : ObservableObject
             resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#666666"));
         }
     }
+
+    [RelayCommand]
+    private void CancelOperation()
+    {
+        _cts?.Cancel();
+        StatusText = "Cancelling operation...";
+    }
+
+
+    // اضافه کردن این فیلدها جهت مدیریت مرتب‌سازی
+    private string _currentSortColumn = string.Empty;
+    private bool _isSortAscending = true;
+
+    [RelayCommand]
+    private void Sort(string columnName)
+    {
+        if (Items.Count == 0) return;
+
+        if (_currentSortColumn == columnName)
+        {
+            _isSortAscending = !_isSortAscending;
+        }
+        else
+        {
+            _currentSortColumn = columnName;
+            _isSortAscending = true;
+        }
+
+        Func<FileItem, object?> keySelector = columnName switch
+        {
+            "Name" => x => x.Name,
+            "Type" => x => x.Type,
+            "Size" => x => x.IsDirectory ? -1 : x.SizeBytes, // پوشه‌ها همیشه بالا یا ثابت بمانند
+            "CreatedDate" => x => x.CreatedDate,
+            "ModifiedDate" => x => x.ModifiedDate,
+            _ => x => x.Name
+        };
+
+        var sorted = _isSortAscending
+            ? Items.OrderBy(keySelector).ToList()
+            : Items.OrderByDescending(keySelector).ToList();
+
+        Items.Clear();
+        foreach (var item in sorted)
+        {
+            Items.Add(item);
+        }
+    }
+
 }

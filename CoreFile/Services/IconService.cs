@@ -45,10 +45,10 @@ public class IconService
 
     public static ImageSource GetIcon(string path, bool isDirectory, bool isSmall = true)
     {
-        string extension = isDirectory ? "folder_dir" : Path.GetExtension(path);
+        // تعیین کلید کش: برای پوشه‌ها کلید ثابت و برای فایل‌ها پسوند آن
+        string cacheKey = isDirectory ? "___DIR___" : Path.GetExtension(path);
 
-        // اگر آیکون پسوند قبلاً کش شده، از حافظه بخوان
-        if (!string.IsNullOrEmpty(extension) && IconCache.TryGetValue(extension, out var cachedIcon))
+        if (!string.IsNullOrEmpty(cacheKey) && IconCache.TryGetValue(cacheKey, out var cachedIcon))
         {
             return cachedIcon;
         }
@@ -57,7 +57,7 @@ public class IconService
         uint flags = SHGFI_ICON | (isSmall ? SHGFI_SMALLICON : SHGFI_LARGEICON);
         uint dwAttr = FILE_ATTRIBUTE_NORMAL;
 
-        // برای بالا بردن سرعت، بدون لمس دیسک و فقط بر اساس Attribute آیکون را استخراج می‌کنیم
+        // استخراج آیکون بر اساس Attribute بدون لمس دیسک برای افزایش سرعت
         flags |= SHGFI_USEFILEATTRIBUTES;
 
         if (isDirectory)
@@ -82,17 +82,18 @@ public class IconService
 
             imageSource.Freeze(); // جهت استفاده آزادانه در Threadهای مختلف WPF
 
-            if (!string.IsNullOrEmpty(extension))
+            if (!string.IsNullOrEmpty(cacheKey))
             {
-                IconCache[extension] = imageSource;
+                IconCache[cacheKey] = imageSource;
             }
 
             return imageSource;
         }
         finally
         {
-            // آزاد‌سازی منابع سیستم‌عامل
+            // آزادسازی منابع Unmanaged سیستم‌عامل
             DestroyIcon(shinfo.hIcon);
         }
     }
+
 }

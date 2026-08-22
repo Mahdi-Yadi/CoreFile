@@ -9,18 +9,128 @@
         Height="720"
         MinWidth="850"
         MinHeight="550"
-        Background="{DynamicResource BgMain}">
+        Background="{DynamicResource BgMain}"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True">
+
+    <Window.Resources>
+        <!-- استایل مدرن دکمه‌های ابزار -->
+        <Style x:Key="ModernToolButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BgSecondary}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- استایل دکمه درایوها -->
+        <Style x:Key="DriveItemButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BgSecondary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- استایل مدرن سرستون‌های GridView Header -->
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Border x:Name="HeaderBorder" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- دکمه ویژه درون Header برای کلیک و مرتب‌سازی -->
+        <Style x:Key="SortableHeaderButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="48"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="28"/>
         </Grid.RowDefinitions>
 
-        <!-- Toolbar -->
+        <!-- Top Navigation Bar -->
         <Border Grid.Row="0" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
-            <Grid Margin="12,0">
+            <Grid Margin="10,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -29,22 +139,20 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0" Content="←" Width="36" Height="32" Margin="0,0,4,0" ToolTip="Back" Command="{Binding GoBackCommand}"/>
-                <Button Grid.Column="1" Content="→" Width="36" Height="32" Margin="0,0,4,0" ToolTip="Forward" Command="{Binding GoForwardCommand}"/>
-                <Button Grid.Column="2" Content="⟳" Width="36" Height="32" Margin="0,0,12,0" ToolTip="Refresh" Command="{Binding RefreshCommand}"/>
+                <Button Grid.Column="0" Content="←" Width="34" Height="32" Margin="0,0,2,0" Style="{StaticResource ModernToolButton}" ToolTip="Back" Command="{Binding GoBackCommand}"/>
+                <Button Grid.Column="1" Content="→" Width="34" Height="32" Margin="0,0,2,0" Style="{StaticResource ModernToolButton}" ToolTip="Forward" Command="{Binding GoForwardCommand}"/>
+                <Button Grid.Column="2" Content="⟳" Width="34" Height="32" Margin="0,0,10,0" Style="{StaticResource ModernToolButton}" ToolTip="Refresh" Command="{Binding RefreshCommand}"/>
 
-                <TextBox Grid.Column="3" Height="32" Padding="8,0" VerticalContentAlignment="Center" 
-                         Text="{Binding CurrentPath}" IsReadOnly="True" 
-                         Background="{DynamicResource BgSecondary}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderColor}"/>
+                <Border Grid.Column="3" Height="32" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="4">
+                    <TextBox Text="{Binding CurrentPath}" IsReadOnly="True" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0" Foreground="{DynamicResource TextPrimary}" FontSize="12"/>
+                </Border>
 
-                <!-- دکمه تنظیمات -->
-                <ToggleButton x:Name="SettingsButton" Grid.Column="4" Content="⚙" Width="36" Height="32" Margin="8,0,0,0" ToolTip="Settings"/>
+                <ToggleButton x:Name="SettingsButton" Grid.Column="4" Content="⚙" Width="34" Height="32" Margin="8,0,0,0" Style="{StaticResource {x:Type ToggleButton}}" ToolTip="Settings"/>
 
-                <!-- منوی کشویی تنظیمات (Theme Menu) -->
                 <Popup IsOpen="{Binding IsChecked, ElementName=SettingsButton}" StaysOpen="False" PlacementTarget="{Binding ElementName=SettingsButton}" Placement="Bottom">
-                    <Border Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="12" Width="180">
+                    <Border Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="12" Width="180">
                         <StackPanel>
-                            <TextBlock Text="App Theme" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                            <TextBlock Text="App Theme" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
                             <RadioButton Content="Light Mode" IsChecked="{Binding IsDarkMode, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" 
                                          Command="{Binding ToggleThemeCommand}" CommandParameter="Light" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                             <RadioButton Content="Dark Mode" IsChecked="{Binding IsDarkMode}" 
@@ -58,13 +166,13 @@
         <!-- Main Workspace -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="230"/>
+                <ColumnDefinition Width="220"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="320" MaxWidth="500" MinWidth="200"/>
+                <ColumnDefinition Width="300" MaxWidth="500" MinWidth="180"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left Sidebar (Drives) -->
+            <!-- Left Navigation Sidebar -->
             <Border Grid.Column="0" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,1,0">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -72,26 +180,22 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="This PC" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="16,0"/>
+                    <TextBlock Grid.Row="0" Text="This PC" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="14,0"/>
 
-                    <!-- کلید رفع باگ: HorizontalContentAlignment="Stretch" روی ListBox -->
                     <ListBox Grid.Row="1" ItemsSource="{Binding Drives}" BorderThickness="0" Background="Transparent" Padding="4"
-                             HorizontalContentAlignment="Stretch"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                             HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <!-- کلید رفع باگ: HorizontalAlignment="Stretch" روی Button -->
-                                <Button Command="{Binding DataContext.OpenDriveCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                        CommandParameter="{Binding}"
-                                        Background="Transparent" BorderThickness="0" 
-                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="6,8">
-                                    <Grid>
+                                <Button Style="{StaticResource DriveItemButtonStyle}"
+                                        Command="{Binding DataContext.OpenDriveCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                        CommandParameter="{Binding}">
+                                    <Grid HorizontalAlignment="Stretch">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <Image Grid.Column="0" Source="{Binding Icon}" Width="18" Height="18" Margin="0,0,10,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
                                     </Grid>
                                 </Button>
                             </DataTemplate>
@@ -100,51 +204,137 @@
                 </Grid>
             </Border>
 
-            <!-- Center View (Files Table) -->
+            <!-- Center View (Modern Details File View) -->
             <Grid Grid.Column="1" Background="{DynamicResource BgPanel}">
                 <ListView ItemsSource="{Binding Items}"
                           SelectedItem="{Binding SelectedItem}"
+                          SelectionMode="Extended"
+                          SelectionChanged="FilesList_SelectionChanged"
                           BorderThickness="0"
                           Background="Transparent"
                           Foreground="{DynamicResource TextPrimary}"
                           MouseDoubleClick="FilesList_MouseDoubleClick"
+                          ScrollViewer.CanContentScroll="True"
                           VirtualizingStackPanel.IsVirtualizing="True"
                           VirtualizingStackPanel.VirtualizationMode="Recycling">
 
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="4,6"/>
+                            <Setter Property="Margin" Value="2,1"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                            <GridViewRowPresenter VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource BgSecondary}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
                     <ListView.InputBindings>
-                        <KeyBinding Key="C" Modifiers="Control" Command="{Binding CopyCommand}" CommandParameter="{Binding SelectedItem}"/>
-                        <KeyBinding Key="X" Modifiers="Control" Command="{Binding CutCommand}" CommandParameter="{Binding SelectedItem}"/>
+                        <KeyBinding Key="C" Modifiers="Control" Command="{Binding CopyCommand}"/>
+                        <KeyBinding Key="X" Modifiers="Control" Command="{Binding CutCommand}"/>
                         <KeyBinding Key="V" Modifiers="Control" Command="{Binding PasteCommand}"/>
-                        <KeyBinding Key="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedItem}"/>
+                        <KeyBinding Key="Delete" Command="{Binding DeleteCommand}"/>
                     </ListView.InputBindings>
 
                     <ListView.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Copy" Command="{Binding CopyCommand}" CommandParameter="{Binding DataContext.SelectedItem, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"/>
-                            <MenuItem Header="Cut" Command="{Binding CutCommand}" CommandParameter="{Binding DataContext.SelectedItem, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"/>
+                            <MenuItem Header="Copy" Command="{Binding CopyCommand}"/>
+                            <MenuItem Header="Cut" Command="{Binding CutCommand}"/>
                             <MenuItem Header="Paste" Command="{Binding PasteCommand}"/>
                             <Separator/>
-                            <MenuItem Header="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding DataContext.SelectedItem, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}}"/>
+                            <MenuItem Header="Delete" Command="{Binding DeleteCommand}"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
 
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Name" Width="280">
+                            <!-- ستون نام -->
+                            <GridViewColumn Width="280">
+                                <GridViewColumn.Header>
+                                    <Button Content="Name" Style="{StaticResource SortableHeaderButton}" 
+                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
+                                            CommandParameter="Name"/>
+                                </GridViewColumn.Header>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" Margin="0,2">
-                                            <Image Source="{Binding Icon}" Width="18" Height="18" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextPrimary}"/>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Image Source="{Binding Icon}" Width="18" Height="18" Margin="0,0,10,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="12.5" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="90"/>
-                            <GridViewColumn Header="Size" DisplayMemberBinding="{Binding SizeText}" Width="90"/>
-                            <GridViewColumn Header="Created" DisplayMemberBinding="{Binding CreatedDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Width="130"/>
-                            <GridViewColumn Header="Modified" DisplayMemberBinding="{Binding ModifiedDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Width="130"/>
+                            <!-- ستون نوع -->
+                            <GridViewColumn Width="110">
+                                <GridViewColumn.Header>
+                                    <Button Content="Type" Style="{StaticResource SortableHeaderButton}" 
+                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
+                                            CommandParameter="Type"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Type}" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <!-- ستون سایز -->
+                            <GridViewColumn Width="100">
+                                <GridViewColumn.Header>
+                                    <Button Content="Size" Style="{StaticResource SortableHeaderButton}" 
+                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
+                                            CommandParameter="Size"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SizeText}" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <!-- ستون تاریخ ساخت -->
+                            <GridViewColumn Width="135">
+                                <GridViewColumn.Header>
+                                    <Button Content="Date Created" Style="{StaticResource SortableHeaderButton}" 
+                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
+                                            CommandParameter="CreatedDate"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding CreatedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <!-- ستون تاریخ تغییر -->
+                            <GridViewColumn Width="135">
+                                <GridViewColumn.Header>
+                                    <Button Content="Date Modified" Style="{StaticResource SortableHeaderButton}" 
+                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
+                                            CommandParameter="ModifiedDate"/>
+                                </GridViewColumn.Header>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ModifiedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>
@@ -159,44 +349,44 @@
                     BorderBrush="{DynamicResource BorderColor}" 
                     BorderThickness="1,0,0,0"
                     Visibility="{Binding IsPreviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Grid Margin="16">
+                <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="Preview" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
+                    <TextBlock Grid.Row="0" Text="PREVIEW" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
 
                     <TextBlock Grid.Row="1" 
                                Text="{Binding SelectedItem.Name}" 
                                FontWeight="SemiBold" 
-                               FontSize="14" 
+                               FontSize="13" 
                                Foreground="{DynamicResource TextPrimary}"
                                TextTrimming="CharacterEllipsis" 
-                               Margin="0,0,0,16"/>
+                               Margin="0,0,0,12"/>
 
                     <!-- Image Preview -->
-                    <Border Grid.Row="2" CornerRadius="6" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="8"
+                    <Border Grid.Row="2" CornerRadius="4" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="4"
                             Visibility="{Binding IsImagePreview, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <Image Source="{Binding PreviewImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <Image Source="{Binding PreviewImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="LowQuality"/>
                     </Border>
 
                     <!-- Text Preview -->
-                    <Border Grid.Row="2" CornerRadius="6" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="8"
+                    <Border Grid.Row="2" CornerRadius="4" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="6"
                             Visibility="{Binding IsTextPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding PreviewText}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
+                            <TextBox Text="{Binding PreviewText}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
                         </ScrollViewer>
                     </Border>
 
-                    <!-- Video Preview / General Placeholder -->
-                    <Border Grid.Row="2" CornerRadius="6" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="16"
+                    <!-- Media Preview -->
+                    <Border Grid.Row="2" CornerRadius="4" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="12"
                             Visibility="{Binding IsMediaPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="🎬" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                            <TextBlock Text="{Binding SelectedItem.Type, StringFormat={}{0} File}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="{Binding SelectedItem.SizeText}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                            <TextBlock Text="📄" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            <TextBlock Text="{Binding SelectedItem.Type, StringFormat={}{0} File}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="{Binding SelectedItem.SizeText}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -205,10 +395,15 @@
 
         <!-- Status Bar -->
         <Border Grid.Row="2" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
-                <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
-                <ProgressBar Height="8" Width="120" Margin="12,0,0,0" Value="{Binding OperationProgress}" Visibility="{Binding IsOperationRunning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-            </StackPanel>
+            <Grid Margin="10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                <ProgressBar Grid.Column="1" Height="6" Width="100" Value="{Binding OperationProgress}" Visibility="{Binding IsOperationRunning, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center"/>
+            </Grid>
         </Border>
     </Grid>
 </Window>
