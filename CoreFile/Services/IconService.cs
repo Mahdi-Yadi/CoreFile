@@ -1,14 +1,11 @@
 ﻿using System.Collections.Concurrent;
-using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
 namespace CoreFile.Services;
-
 public class IconService
 {
     // Caching برای جلوگیری از فراخوانی تکراری Win32 API

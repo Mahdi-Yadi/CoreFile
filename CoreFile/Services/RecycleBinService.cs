@@ -1,7 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-
 namespace CoreFile.Services;
-
 public class RecycleBinService
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]

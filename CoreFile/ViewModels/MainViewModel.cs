@@ -573,10 +573,18 @@ public partial class MainViewModel : ObservableObject
             _ => x => x.Name
         };
 
-        var sorted = _isSortAscending
-            ? Items.OrderBy(keySelector).ToList()
-            : Items.OrderByDescending(keySelector).ToList();
-
+        //var sorted = _isSortAscending
+        //    ? Items.OrderBy(keySelector).ToList()
+        //    : Items.OrderByDescending(keySelector).ToList();
+        IEnumerable<FileItem> sorted = columnName switch
+        {
+            "Name" => _isSortAscending ? Items.OrderBy(x => x.Name) : Items.OrderByDescending(x => x.Name),
+            "Type" => _isSortAscending ? Items.OrderBy(x => x.Type) : Items.OrderByDescending(x => x.Type),
+            "Size" => _isSortAscending ? Items.OrderBy(x => x.IsDirectory ? -1 : x.SizeBytes) : Items.OrderByDescending(x => x.IsDirectory ? -1 : x.SizeBytes),
+            "CreatedDate" => _isSortAscending ? Items.OrderBy(x => x.CreatedDate) : Items.OrderByDescending(x => x.CreatedDate),
+            "ModifiedDate" => _isSortAscending ? Items.OrderBy(x => x.ModifiedDate) : Items.OrderByDescending(x => x.ModifiedDate),
+            _ => Items.OrderBy(x => x.Name)
+        };
         Items.Clear();
         foreach (var item in sorted)
         {

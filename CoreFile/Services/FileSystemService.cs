@@ -69,7 +69,8 @@ public class FileSystemService
                         IsDirectory = false,
                         Icon = IconService.GetIcon(file.FullName, isDirectory: false),
                         CreatedDate = file.CreationTime,
-                        ModifiedDate = file.LastWriteTime
+                        ModifiedDate = file.LastWriteTime,
+                        SizeBytes = file.Length,
                     });
                 }
                 catch

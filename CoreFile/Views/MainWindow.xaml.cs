@@ -1,6 +1,5 @@
 ﻿using CoreFile.Models;
 using CoreFile.ViewModels;
-using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
 

@@ -19,6 +19,9 @@ public partial class FileItem : ObservableObject
     private string sizeText = string.Empty;
 
     [ObservableProperty]
+    private long sizeBytes;
+
+    [ObservableProperty]
     private DateTime createdDate;
 
     [ObservableProperty]

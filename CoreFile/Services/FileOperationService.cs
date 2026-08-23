@@ -37,9 +37,21 @@ public class FileOperationService
                 }
                 else // Cut / Move
                 {
-                    File.Move(file, destinationPath, overwrite: true);
-                    copiedBytes += new FileInfo(destinationPath).Length;
-                    progress?.Report((double)copiedBytes / totalBytes * 100);
+                    try
+                    {
+                        File.Move(file, destinationPath, overwrite: true);
+                        copiedBytes += new FileInfo(destinationPath).Length;
+                        progress?.Report((double)copiedBytes / totalBytes * 100);
+                    }
+                    catch (IOException) // هندل کردن انتقال بین دو درایو متفاوت
+                    {
+                        await CopyFileWithProgressAsync(file, destinationPath, (b) =>
+                        {
+                            copiedBytes += b;
+                            progress?.Report((double)copiedBytes / totalBytes * 100);
+                        }, cancellationToken);
+                        File.Delete(file);
+                    }
                 }
             }
 
