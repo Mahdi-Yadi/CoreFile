@@ -528,6 +528,13 @@ public partial class MainViewModel : ObservableObject
 
         var resources = Application.Current.Resources;
 
+        void Set(string key, string hex)
+        {
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            brush.Freeze();
+            resources[key] = brush;
+        }
+
         if (IsDarkMode)
         {
             resources["BgMain"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E"));
