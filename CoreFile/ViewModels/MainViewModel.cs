@@ -507,6 +507,35 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool isDarkMode;
 
+    //[RelayCommand]
+    //private void ToggleTheme(string theme)
+    //{
+    //    IsDarkMode = theme == "Dark";
+
+    //    var resources = System.Windows.Application.Current.Resources;
+
+    //    if (IsDarkMode)
+    //    {
+    //        resources["BgMain"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E"));
+    //        resources["BgPanel"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#252526"));
+    //        resources["BgSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D2D30"));
+    //        resources["BgPreview"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#181818"));
+    //        resources["BorderColor"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3F3F46"));
+    //        resources["TextPrimary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F1F1"));
+    //        resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
+    //    }
+    //    else
+    //    {
+    //        resources["BgMain"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FAFAFA"));
+    //        resources["BgPanel"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF"));
+    //        resources["BgSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F3F3F3"));
+    //        resources["BgPreview"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F9F9F9"));
+    //        resources["BorderColor"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E5E5E5"));
+    //        resources["TextPrimary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#222222"));
+    //        resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#666666"));
+    //    }
+    //}
+
     [RelayCommand]
     private void ToggleTheme(string theme)
     {
@@ -514,25 +543,38 @@ public partial class MainViewModel : ObservableObject
 
         var resources = System.Windows.Application.Current.Resources;
 
+        void Set(string key, string hex)
+        {
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            brush.Freeze();
+            resources[key] = brush;
+        }
+
         if (IsDarkMode)
         {
-            resources["BgMain"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E1E1E"));
-            resources["BgPanel"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#252526"));
-            resources["BgSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D2D30"));
-            resources["BgPreview"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#181818"));
-            resources["BorderColor"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3F3F46"));
-            resources["TextPrimary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F1F1"));
-            resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
+            Set("BgMain", "#1E1E1E");
+            Set("BgPanel", "#252526");
+            Set("BgSecondary", "#2D2D30");
+            Set("BgPreview", "#181818");
+            Set("BorderColor", "#3F3F46");
+            Set("TextPrimary", "#F1F1F1");
+            Set("TextSecondary", "#999999");
+            Set("HoverBg", "#2E2E32");
+            Set("SelectionBg", "#143F3C");
+            Set("Accent", "#5EEAD4");
         }
         else
         {
-            resources["BgMain"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FAFAFA"));
-            resources["BgPanel"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF"));
-            resources["BgSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F3F3F3"));
-            resources["BgPreview"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F9F9F9"));
-            resources["BorderColor"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E5E5E5"));
-            resources["TextPrimary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#222222"));
-            resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#666666"));
+            Set("BgMain", "#FAFAFA");
+            Set("BgPanel", "#FFFFFF");
+            Set("BgSecondary", "#F3F3F3");
+            Set("BgPreview", "#F9F9F9");
+            Set("BorderColor", "#E5E5E5");
+            Set("TextPrimary", "#222222");
+            Set("TextSecondary", "#666666");
+            Set("HoverBg", "#EFEFEF");
+            Set("SelectionBg", "#DDF1EE");
+            Set("Accent", "#0F766E");
         }
     }
 
