@@ -1,0 +1,98 @@
+﻿<Window x:Class="CoreFile.Views.BatchRenameDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Batch Rename"
+        Width="640" Height="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Border Background="{DynamicResource BgPanel}"
+            BorderBrush="{DynamicResource BorderColor}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="18">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- عنوان پنجره -->
+            <Grid Grid.Row="0" Margin="0,0,0,14">
+                <TextBlock Text="Batch Rename Files (تغییر نام دسته‌جمعی)" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimary}"/>
+                <Button Content="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="10"
+                        Width="24" Height="24" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource TextSecondary}" Click="BtnCancel_Click"/>
+            </Grid>
+
+            <!-- تنظیمات و الگوهای تغییر نام -->
+            <Border Grid.Row="1" Background="{DynamicResource BgSecondary}" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- سطر ۱: پیشوند و پسوند -->
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                        <TextBlock Text="Prefix (پیشوند):" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TxtPrefix" Height="28" Padding="6,0" VerticalContentAlignment="Center" TextChanged="Rule_Changed"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                        <TextBlock Text="Suffix (پسوند):" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TxtSuffix" Height="28" Padding="6,0" VerticalContentAlignment="Center" TextChanged="Rule_Changed"/>
+                    </StackPanel>
+
+                    <!-- سطر ۲: جستجو و جایگزینی -->
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Find (پیدا کردن):" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TxtFind" Height="28" Padding="6,0" VerticalContentAlignment="Center" TextChanged="Rule_Changed"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Text="Replace With (جایگزین با):" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="TxtReplace" Height="28" Padding="6,0" VerticalContentAlignment="Center" TextChanged="Rule_Changed"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- پیش‌نمایش تغییر نام فایل‌ها -->
+            <Border Grid.Row="2" Background="{DynamicResource BgSecondary}" CornerRadius="8" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <ListView x:Name="PreviewList" Background="Transparent" BorderThickness="0">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="270" Header="Original Name (نام فعلی)" DisplayMemberBinding="{Binding OriginalName}"/>
+                            <GridViewColumn Width="310" Header="New Name (نام جدید)">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding NewName}" Foreground="{DynamicResource Accent}" FontWeight="Medium"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+
+            <!-- دکمه‌های تایید و انصراف -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+                <Button Content="Cancel" Width="85" Height="30" Background="Transparent" 
+                        BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                        Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" Click="BtnCancel_Click"/>
+                <Button Content="Apply Rename" Width="110" Height="30" Background="{DynamicResource Accent}" 
+                        BorderThickness="0" Foreground="#FFFFFF" FontWeight="SemiBold" Click="BtnApply_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

@@ -10,16 +10,41 @@ public class FileSystemService
             if (!drive.IsReady)
                 continue;
 
-            // در بخش GetDrives:
+            long totalBytes = drive.TotalSize;
+            long freeBytes = drive.AvailableFreeSpace;
+            long usedBytes = totalBytes - freeBytes;
+
+            double usedPercent = totalBytes > 0 ? ((double)usedBytes / totalBytes) * 100 : 0;
+            string freeText = FormatSize(freeBytes);
+            string totalText = FormatSize(totalBytes);
+
             yield return new FileItem
             {
                 Name = $"{drive.VolumeLabel} ({drive.Name.TrimEnd('\\')})",
                 FullPath = drive.RootDirectory.FullName,
                 Type = "Drive",
                 IsDirectory = true,
-                Icon = IconService.GetIcon(drive.Name, isDirectory: true)
+                IsDrive = true,
+                DriveUsedPercentage = usedPercent,
+                DriveUsageText = $"{freeText} free of {totalText}",
+                IsDriveNearFull = usedPercent >= 90.0,
+                Icon = IconService.GetIcon(drive.Name, isDirectory: true, isDrive: true)
             };
         }
+    }
+
+    // نمونه بررسی در متد ساخت FileItem
+    public FileItem CreateFromFileSystemInfo(FileSystemInfo info)
+    {
+        bool isDir = (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
+        return new FileItem
+        {
+            Name = info.Name,
+            FullPath = info.FullName,
+            IsDirectory = isDir,
+            Extension = isDir ? string.Empty : info.Extension,
+            // سایر فیلدها...
+        };
     }
 
     public IEnumerable<FileItem> GetItems(string path)
@@ -41,6 +66,7 @@ public class FileSystemService
                         FullPath = directoryInfo.FullName,
                         Type = "Folder",
                         IsDirectory = true,
+                        SizeText = "--",
                         Icon = IconService.GetIcon(directoryInfo.FullName, isDirectory: true),
                         CreatedDate = directoryInfo.CreationTime,
                         ModifiedDate = directoryInfo.LastWriteTime
@@ -113,4 +139,35 @@ public class FileSystemService
 
         return $"{bytes / (1024d * 1024 * 1024 * 1024):F1} TB";
     }
+
+    public async Task<(long TotalBytes, int FileCount)> CalculateDirectorySizeAsync(string directoryPath, CancellationToken cancellationToken)
+    {
+        return await Task.Run(() =>
+        {
+            long totalBytes = 0;
+            int fileCount = 0;
+
+            try
+            {
+                var options = new EnumerationOptions
+                {
+                    IgnoreInaccessible = true,
+                    RecurseSubdirectories = true,
+                    AttributesToSkip = FileAttributes.ReparsePoint // جلوگیری از لوپ در Symlinkها
+                };
+
+                var dirInfo = new DirectoryInfo(directoryPath);
+                foreach (var file in dirInfo.EnumerateFiles("*", options))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    totalBytes += file.Length;
+                    fileCount++;
+                }
+            }
+            catch { }
+
+            return (totalBytes, fileCount);
+        }, cancellationToken);
+    }
+
 }

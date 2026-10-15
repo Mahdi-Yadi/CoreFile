@@ -4,552 +4,78 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:CoreFile.ViewModels"
+        xmlns:views="clr-namespace:CoreFile.Views.UserControls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=False}"
         Title="CoreFile"
-        Width="1200"
-        Height="740"
-        MinWidth="850"
-        MinHeight="550"
+        Width="1280" Height="800"
+        MinWidth="950" MinHeight="600"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgMain}"
         Foreground="{DynamicResource TextPrimary}"
-        FontFamily="Segoe UI"
+        FontFamily="Segoe UI Variable Display, Segoe UI"
         FontSize="13"
-        TextOptions.TextFormattingMode="Display"
-        TextOptions.TextRenderingMode="ClearType"
-        UseLayoutRounding="True"
-        SnapsToDevicePixels="True">
+        UseLayoutRounding="True" SnapsToDevicePixels="True">
 
-    <!-- میانبرهای سراسری پنجره -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="44" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0"/>
+    </WindowChrome.WindowChrome>
+
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+        <KeyBinding Key="T" Modifiers="Control" Command="{Binding AddNewTabCommand}"/>
+        <KeyBinding Key="W" Modifiers="Control" Command="{Binding CloseTabCommand}" CommandParameter="{Binding CurrentTab}"/>
         <KeyBinding Key="Left" Modifiers="Alt" Command="{Binding GoBackCommand}"/>
         <KeyBinding Key="Right" Modifiers="Alt" Command="{Binding GoForwardCommand}"/>
         <KeyBinding Key="N" Modifiers="Control+Shift" Command="{Binding CreateFolderCommand}"/>
+        <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}"/>
+        <KeyBinding Key="Y" Modifiers="Control" Command="{Binding RedoCommand}"/>
+        <KeyBinding Key="T" Modifiers="Control+Shift" Command="{Binding OpenTerminalCommand}"/>
+        <KeyBinding Key="F10" Command="{Binding ToggleDualPaneCommand}"/>
     </Window.InputBindings>
 
     <Window.Resources>
-
-        <!-- ================= پایه‌ها ================= -->
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-
-        <!-- آیکون‌ها: Segoe Fluent Icons (ویندوز 11) با جایگزین Segoe MDL2 Assets (ویندوز 10 / Server 2016+) -->
         <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
-        <!-- حلقهٔ فوکوس کیبورد (فقط هنگام ناوبری با کیبورد دیده می‌شود) -->
-        <Style x:Key="ModernFocusVisual">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle Stroke="{DynamicResource Accent}" StrokeThickness="1.5" RadiusX="6" RadiusY="6"
-                                   Margin="-1" SnapsToDevicePixels="True" IsHitTestVisible="False"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- ================= اسکرول‌بار باریک و مدرن ================= -->
-        <Style x:Key="ScrollThumbStyle" TargetType="Thumb">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="IsTabStop" Value="False"/>
-            <Setter Property="Focusable" Value="False"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Thumb">
-                        <Border x:Name="ThumbBorder" Background="{DynamicResource TextSecondary}" Opacity="0.4" CornerRadius="3"/>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ThumbBorder" Property="Opacity" Value="0.7"/>
-                            </Trigger>
-                            <Trigger Property="IsDragging" Value="True">
-                                <Setter TargetName="ThumbBorder" Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="ScrollPageButtonStyle" TargetType="RepeatButton">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="IsTabStop" Value="False"/>
-            <Setter Property="Focusable" Value="False"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="RepeatButton">
-                        <Border Background="Transparent"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <ControlTemplate x:Key="VerticalScrollBarTemplate" TargetType="ScrollBar">
-            <Grid Background="Transparent">
-                <Track x:Name="PART_Track" IsDirectionReversed="True">
-                    <Track.DecreaseRepeatButton>
-                        <RepeatButton Command="ScrollBar.PageUpCommand" Style="{StaticResource ScrollPageButtonStyle}"/>
-                    </Track.DecreaseRepeatButton>
-                    <Track.Thumb>
-                        <Thumb Style="{StaticResource ScrollThumbStyle}" Margin="2,0"/>
-                    </Track.Thumb>
-                    <Track.IncreaseRepeatButton>
-                        <RepeatButton Command="ScrollBar.PageDownCommand" Style="{StaticResource ScrollPageButtonStyle}"/>
-                    </Track.IncreaseRepeatButton>
-                </Track>
-            </Grid>
-        </ControlTemplate>
-
-        <ControlTemplate x:Key="HorizontalScrollBarTemplate" TargetType="ScrollBar">
-            <Grid Background="Transparent">
-                <Track x:Name="PART_Track" IsDirectionReversed="False">
-                    <Track.DecreaseRepeatButton>
-                        <RepeatButton Command="ScrollBar.PageLeftCommand" Style="{StaticResource ScrollPageButtonStyle}"/>
-                    </Track.DecreaseRepeatButton>
-                    <Track.Thumb>
-                        <Thumb Style="{StaticResource ScrollThumbStyle}" Margin="0,2"/>
-                    </Track.Thumb>
-                    <Track.IncreaseRepeatButton>
-                        <RepeatButton Command="ScrollBar.PageRightCommand" Style="{StaticResource ScrollPageButtonStyle}"/>
-                    </Track.IncreaseRepeatButton>
-                </Track>
-            </Grid>
-        </ControlTemplate>
-
-        <Style TargetType="ScrollBar">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <!-- استایل تب‌ها -->
+        <Style x:Key="Win11TabItemStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Width" Value="12"/>
-            <Setter Property="Template" Value="{StaticResource VerticalScrollBarTemplate}"/>
-            <Style.Triggers>
-                <Trigger Property="Orientation" Value="Horizontal">
-                    <Setter Property="Width" Value="Auto"/>
-                    <Setter Property="Height" Value="12"/>
-                    <Setter Property="Template" Value="{StaticResource HorizontalScrollBarTemplate}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- ================= استایل متن‌ها ================= -->
-        <Style x:Key="GlyphText" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource IconFont}"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-
-        <Style x:Key="CommandIcon" TargetType="TextBlock" BasedOn="{StaticResource GlyphText}">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-        </Style>
-
-        <Style x:Key="CellText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-        </Style>
-
-        <Style x:Key="DetailLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11.5"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="DetailValue" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="EmptyTitle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,12,0,4"/>
-        </Style>
-
-        <Style x:Key="EmptyHint" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="TextAlignment" Value="Center"/>
-            <Setter Property="MaxWidth" Value="240"/>
-        </Style>
-
-        <!-- مخفی کردن بخش‌هایی که فقط با وجود آیتم انتخاب‌شده معنی دارند -->
-        <Style x:Key="HideWhenNoSelection" TargetType="FrameworkElement">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding SelectedItem}" Value="{x:Null}">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="VerticalDivider" TargetType="Border">
-            <Setter Property="Width" Value="1"/>
-            <Setter Property="Height" Value="18"/>
-            <Setter Property="Margin" Value="8,0"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Background" Value="{DynamicResource BorderColor}"/>
-        </Style>
-
-        <!-- ================= دکمه‌ها ================= -->
-
-        <!-- دکمهٔ آیکونی نوار ناوبری -->
-        <Style x:Key="ModernToolButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="FontFamily" Value="{StaticResource IconFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Width" Value="36"/>
             <Setter Property="Height" Value="34"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource ModernFocusVisual}"/>
+            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="MaxWidth" Value="220"/>
+            <Setter Property="Margin" Value="2,0"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BorderColor}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.4"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- دکمهٔ تنظیمات (ToggleButton) -->
-        <Style x:Key="IconToggleButton" TargetType="ToggleButton">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="FontFamily" Value="{StaticResource IconFont}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="34"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource ModernFocusVisual}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
-                            </Trigger>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource SelectionBg}"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource Accent}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- دکمهٔ نوار فرمان (آیکون + متن) -->
-        <Style x:Key="CommandBarButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="Margin" Value="0,0,2,0"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource ModernFocusVisual}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BorderColor}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.4"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- فرمان‌هایی که به آیتم انتخاب‌شده نیاز دارند (Cut / Copy / Delete) -->
-        <Style x:Key="SelectionCommandButton" TargetType="Button" BasedOn="{StaticResource CommandBarButton}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding SelectedItem}" Value="{x:Null}">
-                    <Setter Property="IsEnabled" Value="False"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- فرمان‌هایی که به یک پوشهٔ باز نیاز دارند (New folder / Paste) -->
-        <Style x:Key="FolderCommandButton" TargetType="Button" BasedOn="{StaticResource CommandBarButton}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding CurrentPath}" Value="">
-                    <Setter Property="IsEnabled" Value="False"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding CurrentPath}" Value="{x:Null}">
-                    <Setter Property="IsEnabled" Value="False"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- دکمهٔ متنی (مثل Cancel) -->
-        <Style x:Key="TextButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource Accent}"/>
-            <Setter Property="FontSize" Value="11.5"/>
-            <Setter Property="Padding" Value="8,2"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource ModernFocusVisual}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- دکمهٔ درایوها در سایدبار -->
-        <Style x:Key="DriveItemButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="Margin" Value="0,1"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource ModernFocusVisual}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BorderColor}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- انتخاب تم (Segmented control) در پنل تنظیمات -->
-        <Style x:Key="ThemeSegmentButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-            <Setter Property="Padding" Value="8,7"/>
-            <Setter Property="FocusVisualStyle" Value="{StaticResource ModernFocusVisual}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="ThemeLightButton" TargetType="Button" BasedOn="{StaticResource ThemeSegmentButton}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsDarkMode}" Value="False">
-                    <Setter Property="Background" Value="{DynamicResource SelectionBg}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="ThemeDarkButton" TargetType="Button" BasedOn="{StaticResource ThemeSegmentButton}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsDarkMode}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource SelectionBg}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- ================= نوار پیشرفت ================= -->
-        <Style x:Key="SlimProgressBar" TargetType="ProgressBar">
-            <Setter Property="Height" Value="4"/>
-            <Setter Property="Minimum" Value="0"/>
-            <Setter Property="Maximum" Value="100"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ProgressBar">
-                        <Grid>
-                            <Border x:Name="PART_Track" Background="{DynamicResource BorderColor}" CornerRadius="2"/>
-                            <Border x:Name="PART_Indicator" HorizontalAlignment="Left" Background="{DynamicResource Accent}" CornerRadius="2"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- ================= سرستون‌های لیست ================= -->
-
-        <!-- دستگیرهٔ تغییر عرض ستون (بدون PART_HeaderGripper تغییر عرض کار نمی‌کند) -->
-        <Style x:Key="HeaderGripperStyle" TargetType="Thumb">
-            <Setter Property="Width" Value="8"/>
-            <Setter Property="Cursor" Value="SizeWE"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Thumb">
-                        <Border Background="Transparent" Padding="0,7">
-                            <Rectangle Width="1" HorizontalAlignment="Right" Fill="{DynamicResource BorderColor}"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="GridViewColumnHeader">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="GridViewColumnHeader">
-                        <Grid SnapsToDevicePixels="True">
-                            <Border x:Name="HeaderBorder" Background="{TemplateBinding Background}"
-                                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1"
-                                    Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  RecognizesAccessKey="True"/>
-                            </Border>
-                            <Thumb x:Name="PART_HeaderGripper" HorizontalAlignment="Right" VerticalAlignment="Stretch"
-                                   Style="{StaticResource HeaderGripperStyle}"/>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HeaderBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                            </Trigger>
-                            <Trigger Property="Role" Value="Padding">
-                                <Setter TargetName="PART_HeaderGripper" Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- دکمهٔ مرتب‌سازی درون سرستون (کل عرض سرستون قابل کلیک است) -->
-        <Style x:Key="SortableHeaderButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="14,8,8,8"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="Transparent" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- ================= منوی راست‌کلیک ================= -->
-        <Style x:Key="ModernContextMenu" TargetType="ContextMenu">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ContextMenu">
-                        <Border Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}"
-                                BorderThickness="1" Padding="0,4">
-                            <StackPanel IsItemsHost="True" Grid.IsSharedSizeScope="True"
-                                        KeyboardNavigation.DirectionalNavigation="Cycle"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="ModernMenuItem" TargetType="MenuItem">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="Padding" Value="8,7"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="MenuItem">
-                        <Border x:Name="Bd" Margin="4,1" Padding="{TemplateBinding Padding}" Background="Transparent"
-                                CornerRadius="4" SnapsToDevicePixels="True">
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="TabBorder" Background="{TemplateBinding Background}" CornerRadius="8,8,0,0" Padding="12,0,8,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="26"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="MenuGesture"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ContentPresenter Grid.Column="0" ContentSource="Icon" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Margin="32,0,0,0"
-                                           VerticalAlignment="Center" FontSize="11.5" Foreground="{DynamicResource TextSecondary}"/>
+
+                                <TextBlock Grid.Column="0" FontFamily="{StaticResource IconFont}" Text="&#xE8B7;" 
+                                           FontSize="13" Foreground="#EAB308" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" Foreground="{TemplateBinding Foreground}"/>
+
+                                <Button Grid.Column="2" Content="&#xE711;" FontFamily="{StaticResource IconFont}" FontSize="9"
+                                        Width="20" Height="20" Background="Transparent" BorderThickness="0"
+                                        Foreground="{DynamicResource TextSecondary}" Margin="6,0,0,0"
+                                        Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}"/>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBg}"/>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                             </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.4"/>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource BgPanel}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -557,630 +83,231 @@
             </Setter>
         </Style>
 
-        <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Separator">
-                        <Border Height="1" Margin="10,4" Background="{DynamicResource BorderColor}"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        <Style x:Key="SettingsOptionBtn" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource BgSecondary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="10,0"/>
         </Style>
-
     </Window.Resources>
 
-    <Grid>
+    <Grid Background="{DynamicResource BgMain}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <!-- ۱. نوار تب‌ها و تایتل‌بار -->
+            <RowDefinition Height="44"/>
+            <!-- ۲. نوار ابزار و آدرس بار -->
+            <RowDefinition Height="48"/>
+            <!-- ۳. فضای کاری اصلی -->
             <RowDefinition Height="*"/>
+            <!-- ۴. نوار وضعیت -->
             <RowDefinition Height="28"/>
         </Grid.RowDefinitions>
 
-        <!-- ================= نوار بالا: ناوبری + آدرس + فرمان‌ها ================= -->
-        <Border Grid.Row="0" Background="{DynamicResource BgPanel}"
-                BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="52"/>
-                    <RowDefinition Height="40"/>
-                </Grid.RowDefinitions>
-
-                <!-- ردیف اول: Back / Forward / Refresh / آدرس / تنظیمات -->
-                <Grid Grid.Row="0" Margin="12,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="&#xE72B;" Margin="0,0,2,0" Style="{StaticResource ModernToolButton}"
-                                ToolTip="Back (Alt+Left)" AutomationProperties.Name="Back" Command="{Binding GoBackCommand}"/>
-                        <Button Content="&#xE72A;" Margin="0,0,2,0" Style="{StaticResource ModernToolButton}"
-                                ToolTip="Forward (Alt+Right)" AutomationProperties.Name="Forward" Command="{Binding GoForwardCommand}"/>
-                        <Button Content="&#xE72C;" Style="{StaticResource ModernToolButton}"
-                                ToolTip="Refresh (F5)" AutomationProperties.Name="Refresh" Command="{Binding RefreshCommand}"/>
-                    </StackPanel>
-
-                    <!-- نوار آدرس -->
-                    <Border Grid.Column="1" Height="34" Margin="10,0,0,0" VerticalAlignment="Center"
-                            Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}"
-                            BorderThickness="1" CornerRadius="6" ToolTip="{Binding CurrentPath}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Grid.Column="0" Style="{StaticResource GlyphText}" Text="&#xE8B7;" FontSize="14"
-                                       Margin="12,0,0,0" Foreground="{DynamicResource TextSecondary}"/>
-
-                            <Grid Grid.Column="1">
-                                <TextBox Text="{Binding CurrentPath, Mode=OneWay}" IsReadOnly="True" BorderThickness="0"
-                                         Background="Transparent" VerticalContentAlignment="Center" Padding="8,0"
-                                         Foreground="{DynamicResource TextPrimary}" FontSize="12.5"
-                                         AutomationProperties.Name="Current path"/>
-
-                                <!-- وقتی مسیری باز نیست -->
-                                <TextBlock Text="This PC" IsHitTestVisible="False" Margin="8,0" VerticalAlignment="Center"
-                                           FontSize="12.5" Foreground="{DynamicResource TextSecondary}">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding CurrentPath}" Value="">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
-                        </Grid>
-                    </Border>
-
-                    <!-- تنظیمات -->
-                    <ToggleButton x:Name="SettingsButton" Grid.Column="2" Content="&#xE713;" Margin="10,0,0,0"
-                                  ToolTip="Settings" AutomationProperties.Name="Settings" VerticalAlignment="Center">
-                        <ToggleButton.Style>
-                            <Style TargetType="ToggleButton" BasedOn="{StaticResource IconToggleButton}">
-                                <Style.Triggers>
-                                    <!-- جلوگیری از باز شدن دوبارهٔ پاپ‌آپ هنگام کلیک روی همین دکمه -->
-                                    <DataTrigger Binding="{Binding IsOpen, ElementName=SettingsPopup}" Value="True">
-                                        <Setter Property="IsHitTestVisible" Value="False"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ToggleButton.Style>
-                    </ToggleButton>
-
-                    <Popup x:Name="SettingsPopup" Grid.Column="2"
-                           IsOpen="{Binding IsChecked, ElementName=SettingsButton, Mode=TwoWay}"
-                           StaysOpen="False" AllowsTransparency="True" PopupAnimation="None"
-                           PlacementTarget="{Binding ElementName=SettingsButton}"
-                           Placement="Bottom" HorizontalOffset="-184" VerticalOffset="4">
-                        <Border Width="220" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}"
-                                BorderThickness="1" CornerRadius="8" Padding="14">
-                            <StackPanel>
-                                <TextBlock Text="Appearance" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <Grid Margin="0,10,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="8"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Button Grid.Column="0" Style="{StaticResource ThemeLightButton}"
-                                            Command="{Binding ToggleThemeCommand}" CommandParameter="Light">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Style="{StaticResource CommandIcon}" Text="&#xE706;" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Light" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Button>
-
-                                    <Button Grid.Column="2" Style="{StaticResource ThemeDarkButton}"
-                                            Command="{Binding ToggleThemeCommand}" CommandParameter="Dark">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Style="{StaticResource CommandIcon}" Text="&#xE708;" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Dark" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Button>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </Popup>
-                </Grid>
-
-                <!-- ردیف دوم: نوار فرمان -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10,0,10,6">
-                    <Button Style="{StaticResource FolderCommandButton}" Command="{Binding CreateFolderCommand}"
-                            ToolTip="New folder (Ctrl+Shift+N)">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CommandIcon}" Text="&#xE8F4;"/>
-                            <TextBlock Text="New folder" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Border Style="{StaticResource VerticalDivider}"/>
-
-                    <Button Style="{StaticResource SelectionCommandButton}" Command="{Binding CutCommand}" ToolTip="Cut (Ctrl+X)">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CommandIcon}" Text="&#xE8C6;"/>
-                            <TextBlock Text="Cut" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Style="{StaticResource SelectionCommandButton}" Command="{Binding CopyCommand}" ToolTip="Copy (Ctrl+C)">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CommandIcon}" Text="&#xE8C8;"/>
-                            <TextBlock Text="Copy" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Style="{StaticResource FolderCommandButton}" Command="{Binding PasteCommand}" ToolTip="Paste (Ctrl+V)">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CommandIcon}" Text="&#xE77F;"/>
-                            <TextBlock Text="Paste" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Border Style="{StaticResource VerticalDivider}"/>
-
-                    <Button Style="{StaticResource SelectionCommandButton}" Command="{Binding DeleteCommand}" ToolTip="Delete (Del)">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CommandIcon}" Text="&#xE74D;"/>
-                            <TextBlock Text="Delete" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- ================= فضای اصلی ================= -->
-        <Grid Grid.Row="1" Background="{DynamicResource BgPanel}">
+        <!-- ۱. نوار تب‌ها -->
+        <Grid Grid.Row="0" Background="{DynamicResource BgMain}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="210"/>
-                <ColumnDefinition Width="*" MinWidth="320"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="280" MinWidth="200" MaxWidth="480"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- سایدبار -->
-            <Border Grid.Column="0" Background="{DynamicResource BgPanel}"
-                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,1,0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,12,0">
+                <Border Width="22" Height="22" CornerRadius="6" Background="{DynamicResource Accent}">
+                    <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource IconFont}" Foreground="#FFFFFF" 
+                               FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
 
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                        <TextBlock Style="{StaticResource GlyphText}" Text="&#xE7F8;" FontSize="14" Margin="0,0,8,0"
-                                   Foreground="{DynamicResource TextSecondary}"/>
-                        <TextBlock Text="This PC" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"
-                                   Foreground="{DynamicResource TextPrimary}"/>
-                    </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom" WindowChrome.IsHitTestVisibleInChrome="True">
+                <ItemsControl ItemsSource="{Binding Tabs}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <RadioButton Style="{StaticResource Win11TabItemStyle}" 
+                                         IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                         Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                         CommandParameter="{Binding}"
+                                         GroupName="AppTabs"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                                  Focusable="False" Padding="8,0,8,8">
-                        <ItemsControl ItemsSource="{Binding Drives}" Focusable="False">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Button Style="{StaticResource DriveItemButtonStyle}"
-                                            Command="{Binding DataContext.OpenDriveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip="{Binding FullPath}">
-                                        <Grid HorizontalAlignment="Stretch">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Image Grid.Column="0" Source="{Binding Icon}" Width="18" Height="18" Margin="0,0,10,0"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontSize="13"
-                                                       Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
-                                        </Grid>
-                                    </Button>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </Border>
+                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0"
+                        Content="&#xE710;" FontFamily="{StaticResource IconFont}" FontSize="11"
+                        Foreground="{DynamicResource TextSecondary}" Margin="4,0,0,2"
+                        Command="{Binding AddNewTabCommand}" ToolTip="New Tab (Ctrl+T)"/>
+            </StackPanel>
 
-            <!-- لیست فایل‌ها -->
-            <Grid Grid.Column="1" Background="{DynamicResource BgPanel}">
-                <ListView ItemsSource="{Binding Items}"
-                          SelectedItem="{Binding SelectedItem}"
-                          SelectionMode="Extended"
-                          SelectionChanged="FilesList_SelectionChanged"
-                          BorderThickness="0"
-                          Background="Transparent"
-                          Foreground="{DynamicResource TextPrimary}"
-                          ScrollViewer.CanContentScroll="True"
-                          VirtualizingStackPanel.IsVirtualizing="True"
-                          VirtualizingStackPanel.VirtualizationMode="Recycling">
+            <!-- کنترل‌های پنجره و تنظیمات تم -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" WindowChrome.IsHitTestVisibleInChrome="True">
+                <ToggleButton x:Name="SettingsBtn" Width="40" Height="32" Background="Transparent" BorderThickness="0"
+                              Content="&#xE713;" FontFamily="{StaticResource IconFont}" FontSize="12"
+                              Foreground="{DynamicResource TextSecondary}" ToolTip="Settings &amp; Layout"/>
 
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                            <Setter Property="Padding" Value="4,5"/>
-                            <Setter Property="Margin" Value="4,1"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                            <!-- دابل‌کلیک فقط روی خود آیتم‌ها (نه هدر یا فضای خالی) -->
-                            <EventSetter Event="MouseDoubleClick" Handler="FilesList_MouseDoubleClick"/>
-                            <!-- راست‌کلیک ابتدا آیتم را انتخاب می‌کند -->
-                            <EventSetter Event="PreviewMouseRightButtonDown" Handler="FileItem_PreviewMouseRightButtonDown"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListViewItem">
-                                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}"
-                                                CornerRadius="6" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-                                            <GridViewRowPresenter Content="{TemplateBinding Content}"
-                                                                  Columns="{TemplateBinding GridView.ColumnCollection}"
-                                                                  VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SelectionBg}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListView.ItemContainerStyle>
+                <ToggleButton Width="40" Height="32" Background="Transparent" BorderThickness="0"
+                              IsChecked="{Binding IsDualPaneEnabled, Mode=OneWay}"
+                              Command="{Binding ToggleDualPaneCommand}"
+                              Content="&#xE7F4;" FontFamily="{StaticResource IconFont}" FontSize="12"
+                              Foreground="{DynamicResource TextSecondary}"
+                              ToolTip="Toggle Dual Pane View (F10)"/>
 
-                    <ListView.InputBindings>
-                        <KeyBinding Key="C" Modifiers="Control" Command="{Binding CopyCommand}"/>
-                        <KeyBinding Key="X" Modifiers="Control" Command="{Binding CutCommand}"/>
-                        <KeyBinding Key="V" Modifiers="Control" Command="{Binding PasteCommand}"/>
-                        <KeyBinding Key="Delete" Command="{Binding DeleteCommand}"/>
-                    </ListView.InputBindings>
+                <Popup IsOpen="{Binding IsChecked, ElementName=SettingsBtn, Mode=TwoWay}"
+                       StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=SettingsBtn}"
+                       Placement="Bottom" HorizontalOffset="-190" VerticalOffset="4">
+                    <Border Width="240" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1" CornerRadius="8" Padding="14">
+                        <StackPanel>
+                            <TextBlock Text="Appearance Theme" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                            <UniformGrid Columns="2" Margin="0,0,0,14">
+                                <Button Content="Light" Height="28" Background="{DynamicResource BgSecondary}" BorderThickness="0" Margin="0,0,4,0"
+                                        Command="{Binding ToggleThemeCommand}" CommandParameter="Light"/>
+                                <Button Content="Dark" Height="28" Background="{DynamicResource BgSecondary}" BorderThickness="0" Margin="4,0,0,0"
+                                        Command="{Binding ToggleThemeCommand}" CommandParameter="Dark"/>
+                            </UniformGrid>
 
-                    <ListView.ContextMenu>
-                        <ContextMenu Style="{StaticResource ModernContextMenu}">
-                            <MenuItem Style="{StaticResource ModernMenuItem}" Header="New folder" InputGestureText="Ctrl+Shift+N"
-                                      Command="{Binding CreateFolderCommand}">
-                                <MenuItem.Icon>
-                                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE8F4;" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <Separator/>
-                            <MenuItem Style="{StaticResource ModernMenuItem}" Header="Cut" InputGestureText="Ctrl+X"
-                                      Command="{Binding CutCommand}">
-                                <MenuItem.Icon>
-                                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE8C6;" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Style="{StaticResource ModernMenuItem}" Header="Copy" InputGestureText="Ctrl+C"
-                                      Command="{Binding CopyCommand}">
-                                <MenuItem.Icon>
-                                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE8C8;" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Style="{StaticResource ModernMenuItem}" Header="Paste" InputGestureText="Ctrl+V"
-                                      Command="{Binding PasteCommand}">
-                                <MenuItem.Icon>
-                                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE77F;" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <Separator/>
-                            <MenuItem Style="{StaticResource ModernMenuItem}" Header="Delete" InputGestureText="Del"
-                                      Command="{Binding DeleteCommand}">
-                                <MenuItem.Icon>
-                                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE74D;" FontSize="14"/>
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </ContextMenu>
-                    </ListView.ContextMenu>
+                            <Border Height="1" Background="{DynamicResource BorderColor}" Margin="0,0,0,12"/>
 
-                    <ListView.View>
-                        <GridView>
-                            <!-- نام -->
-                            <GridViewColumn Width="250">
-                                <GridViewColumn.Header>
-                                    <Button Content="Name" Style="{StaticResource SortableHeaderButton}"
-                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
-                                            CommandParameter="Name"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Grid VerticalAlignment="Center">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Image Grid.Column="0" Source="{Binding Icon}" Width="18" Height="18" Margin="0,0,10,0"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Name}" ToolTip="{Binding Name}"
-                                                       VerticalAlignment="Center" FontSize="12.5"
-                                                       Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
-                                        </Grid>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-
-                            <!-- نوع -->
-                            <GridViewColumn Width="90">
-                                <GridViewColumn.Header>
-                                    <Button Content="Type" Style="{StaticResource SortableHeaderButton}"
-                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
-                                            CommandParameter="Type"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Type}" Style="{StaticResource CellText}"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-
-                            <!-- اندازه -->
-                            <GridViewColumn Width="80">
-                                <GridViewColumn.Header>
-                                    <Button Content="Size" Style="{StaticResource SortableHeaderButton}"
-                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
-                                            CommandParameter="Size"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding SizeText}" Style="{StaticResource CellText}"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-
-                            <!-- تاریخ ساخت -->
-                            <GridViewColumn Width="125">
-                                <GridViewColumn.Header>
-                                    <Button Content="Date created" Style="{StaticResource SortableHeaderButton}"
-                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
-                                            CommandParameter="CreatedDate"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding CreatedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}" Style="{StaticResource CellText}"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-
-                            <!-- تاریخ تغییر -->
-                            <GridViewColumn Width="125">
-                                <GridViewColumn.Header>
-                                    <Button Content="Date modified" Style="{StaticResource SortableHeaderButton}"
-                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
-                                            CommandParameter="ModifiedDate"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding ModifiedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}" Style="{StaticResource CellText}"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-
-                <!-- حالت خوش‌آمدگویی: هنوز درایوی باز نشده -->
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding CurrentPath}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
-                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xEDA2;" FontSize="40" HorizontalAlignment="Center"
-                               Foreground="{DynamicResource TextSecondary}" Opacity="0.5"/>
-                    <TextBlock Style="{StaticResource EmptyTitle}" Text="Choose a drive to get started"/>
-                    <TextBlock Style="{StaticResource EmptyHint}" Text="Pick a drive from the sidebar to browse its files and folders."/>
-                </StackPanel>
-
-                <!-- حالت پوشهٔ خالی -->
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Items.Count}" Value="0">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding CurrentPath}" Value="">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
-                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE838;" FontSize="40" HorizontalAlignment="Center"
-                               Foreground="{DynamicResource TextSecondary}" Opacity="0.5"/>
-                    <TextBlock Style="{StaticResource EmptyTitle}" Text="This folder is empty"/>
-                    <TextBlock Style="{StaticResource EmptyHint}" Text="Press Ctrl+V to paste files here, or create a new folder."/>
-                </StackPanel>
-            </Grid>
-
-            <!-- جداکننده (ناحیهٔ کشیدن شفاف و ۵ پیکسلی) -->
-            <GridSplitter Grid.Column="2" Width="5" HorizontalAlignment="Center" VerticalAlignment="Stretch"
-                          Background="Transparent" ResizeBehavior="PreviousAndNext" ResizeDirection="Columns"
-                          ShowsPreview="False" Focusable="False"/>
-
-            <!-- پنل پیش‌نمایش (همیشه حاضر؛ چیدمان با انتخاب فایل نمی‌پرد) -->
-            <Border Grid.Column="3" Background="{DynamicResource BgPreview}"
-                    BorderBrush="{DynamicResource BorderColor}" BorderThickness="1,0,0,0">
-                <Grid Margin="16,14,16,16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0" Text="Preview" FontSize="12" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextSecondary}"/>
-
-                    <TextBlock Grid.Row="1" Text="{Binding SelectedItem.Name}" ToolTip="{Binding SelectedItem.Name}"
-                               FontWeight="SemiBold" FontSize="14" Margin="0,8,0,0"
-                               Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"
-                               Style="{StaticResource HideWhenNoSelection}"/>
-
-                    <!-- ناحیهٔ محتوای پیش‌نمایش -->
-                    <Grid Grid.Row="2" Margin="0,12">
-
-                        <!-- هیچ فایلی انتخاب نشده -->
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsPreviewVisible}" Value="False">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <TextBlock Style="{StaticResource GlyphText}" Text="&#xE8A5;" FontSize="36" HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource TextSecondary}" Opacity="0.5"/>
-                            <TextBlock Style="{StaticResource EmptyTitle}" Text="Select a file to preview"/>
-                            <TextBlock Style="{StaticResource EmptyHint}" Text="Images and text files are shown here."/>
+                            <TextBlock Text="Folder View Layout" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                            <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding ChangeViewModeCommand}" CommandParameter="Details">
+                                <TextBlock Text="Details (لیست کامل)"/>
+                            </Button>
+                            <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding ChangeViewModeCommand}" CommandParameter="LargeIcons">
+                                <TextBlock Text="Large Icons (آیکون بزرگ)"/>
+                            </Button>
+                            <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding ChangeViewModeCommand}" CommandParameter="SmallIcons">
+                                <TextBlock Text="Small Icons (آیکون کوچک)"/>
+                            </Button>
+                            <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding ChangeViewModeCommand}" CommandParameter="List">
+                                <TextBlock Text="List (فهرست ساده)"/>
+                            </Button>
                         </StackPanel>
+                    </Border>
+                </Popup>
 
-                        <!-- فایل انتخاب شده ولی نوعش قابل پیش‌نمایش نیست -->
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <MultiDataTrigger>
-                                            <MultiDataTrigger.Conditions>
-                                                <Condition Binding="{Binding IsPreviewVisible}" Value="True"/>
-                                                <Condition Binding="{Binding IsImagePreview}" Value="False"/>
-                                                <Condition Binding="{Binding IsTextPreview}" Value="False"/>
-                                                <Condition Binding="{Binding IsMediaPreview}" Value="False"/>
-                                            </MultiDataTrigger.Conditions>
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </MultiDataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <TextBlock Style="{StaticResource GlyphText}" Text="&#xE7C3;" FontSize="36" HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource TextSecondary}" Opacity="0.5"/>
-                            <TextBlock Style="{StaticResource EmptyTitle}" Text="No preview available"/>
-                            <TextBlock Style="{StaticResource EmptyHint}" Text="This file type can't be previewed. Double-click to open it."/>
-                        </StackPanel>
-
-                        <!-- پیش‌نمایش تصویر -->
-                        <Border CornerRadius="6" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}"
-                                BorderThickness="1" Padding="4"
-                                Visibility="{Binding IsImagePreview, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Image Source="{Binding PreviewImage}" Stretch="Uniform" StretchDirection="DownOnly"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                        </Border>
-
-                        <!-- پیش‌نمایش متن -->
-                        <Border CornerRadius="6" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}"
-                                BorderThickness="1" Padding="8"
-                                Visibility="{Binding IsTextPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <TextBox Text="{Binding PreviewText, Mode=OneWay}" IsReadOnly="True" BorderThickness="0"
-                                     Background="Transparent" FontFamily="Cascadia Mono, Consolas" FontSize="11.5"
-                                     Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"
-                                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"/>
-                        </Border>
-
-                        <!-- فایل‌های صوتی و تصویری -->
-                        <Border CornerRadius="6" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}"
-                                BorderThickness="1" Padding="12"
-                                Visibility="{Binding IsMediaPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Style="{StaticResource GlyphText}" Text="&#xE8A5;" FontSize="36" HorizontalAlignment="Center"
-                                           Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
-                                <TextBlock Text="{Binding SelectedItem.Type, StringFormat={}{0} File}" FontSize="12" FontWeight="SemiBold"
-                                           HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="{Binding SelectedItem.SizeText}" FontSize="11"
-                                           Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-
-                    <!-- جزئیات آیتم انتخاب‌شده -->
-                    <StackPanel Grid.Row="3" Style="{StaticResource HideWhenNoSelection}">
-                        <Border Height="1" Background="{DynamicResource BorderColor}" Margin="0,0,0,10"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="76"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Type" Style="{StaticResource DetailLabel}"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedItem.Type}" Style="{StaticResource DetailValue}"/>
-
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Size" Style="{StaticResource DetailLabel}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedItem.SizeText}" Style="{StaticResource DetailValue}"/>
-
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Created" Style="{StaticResource DetailLabel}"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedItem.CreatedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}"
-                                       Style="{StaticResource DetailValue}"/>
-
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Modified" Style="{StaticResource DetailLabel}"/>
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedItem.ModifiedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}"
-                                       Style="{StaticResource DetailValue}"/>
-                        </Grid>
-                    </StackPanel>
-                </Grid>
-            </Border>
+                <Button Width="44" Height="32" Content="&#xE921;" FontFamily="{StaticResource IconFont}" FontSize="10"
+                        Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextSecondary}" Click="BtnMinimize_Click"/>
+                <Button x:Name="BtnMax" Width="44" Height="32" Content="&#xE922;" FontFamily="{StaticResource IconFont}" FontSize="10"
+                        Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextSecondary}" Click="BtnMaximize_Click"/>
+                <Button Width="44" Height="32" Content="&#xE8BB;" FontFamily="{StaticResource IconFont}" FontSize="10"
+                        Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextSecondary}" Click="BtnClose_Click"/>
+            </StackPanel>
         </Grid>
 
-        <!-- ================= نوار وضعیت ================= -->
-        <Border Grid.Row="2" Background="{DynamicResource BgSecondary}"
-                BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0">
-            <Grid Margin="14,0">
+        <!-- ۲. نوار ابزار (ToolbarControl) -->
+        <views:ToolbarControl Grid.Row="1"/>
+
+        <!-- ۳. فضای کاری اصلی -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="230"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- سایدبار سمت چپ (SidebarControl) -->
+            <views:SidebarControl Grid.Column="0"/>
+
+            <!-- فضای نمایش فایل‌ها (Dual Pane با FileExplorerControl) -->
+            <Grid Grid.Column="1" Background="{DynamicResource BgPanel}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*">
+                        <ColumnDefinition.Style>
+                            <Style TargetType="ColumnDefinition">
+                                <Setter Property="MaxWidth" Value="0"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDualPaneEnabled}" Value="True">
+                                        <Setter Property="MaxWidth" Value="Infinity"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ColumnDefinition.Style>
+                    </ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="{Binding StatusText}" FontSize="11.5" VerticalAlignment="Center"
-                           Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
-
-                <TextBlock Grid.Column="1" Text="{Binding SelectedItems.Count, StringFormat={}{0} selected}"
-                           FontSize="11.5" Margin="16,0,0,0" VerticalAlignment="Center"
-                           Foreground="{DynamicResource TextSecondary}">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                <!-- پنل ۱ (چپ) -->
+                <Border Grid.Column="0" PreviewMouseDown="LeftPane_PreviewMouseDown">
+                    <Border.Style>
+                        <Style TargetType="Border">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedItems.Count}" Value="0">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsDualPaneEnabled}" Value="True"/>
+                                        <Condition Binding="{Binding IsRightPaneActive}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="BorderThickness" Value="0,0,2,0"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <views:FileExplorerControl/>
+                </Border>
+
+                <!-- اسپلیتر متحرک -->
+                <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                              Background="{DynamicResource BorderColor}" ShowsPreview="False">
+                    <GridSplitter.Style>
+                        <Style TargetType="GridSplitter">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDualPaneEnabled}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                    </GridSplitter.Style>
+                </GridSplitter>
 
-                <!-- پیشرفت عملیات کپی/انتقال + لغو -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0"
-                            Visibility="{Binding IsOperationRunning, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <ProgressBar Style="{StaticResource SlimProgressBar}" Width="140" VerticalAlignment="Center"
-                                 Value="{Binding OperationProgress, Mode=OneWay}"/>
-                    <Button Content="Cancel" Style="{StaticResource TextButton}" Margin="8,0,0,0"
-                            Command="{Binding CancelOperationCommand}"/>
-                </StackPanel>
+                <!-- پنل ۲ (راست) -->
+                <Border Grid.Column="2" Background="{DynamicResource BgPanel}" PreviewMouseDown="RightPane_PreviewMouseDown">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDualPaneEnabled}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsDualPaneEnabled}" Value="True"/>
+                                        <Condition Binding="{Binding IsRightPaneActive}" Value="True"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="BorderThickness" Value="2,0,0,0"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="28"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" Background="{DynamicResource BgSecondary}" Padding="8,4" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                            <TextBlock Text="{Binding SecondaryTab.Title, StringFormat='Pane 2: {0}'}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                        </Border>
+                        <views:FileExplorerControl Grid.Row="1" DataContext="{Binding SecondaryTab}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- پنل پیش‌نمایش (PreviewPanelControl) -->
+            <views:PreviewPanelControl Grid.Column="2"/>
+        </Grid>
+
+        <!-- ۴. نوار وضعیت -->
+        <Border Grid.Row="3" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0">
+            <Grid Margin="14,0">
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" FontSize="11.5" Foreground="{DynamicResource TextSecondary}"/>
             </Grid>
         </Border>
     </Grid>

@@ -1,0 +1,107 @@
+﻿<UserControl x:Class="CoreFile.Views.UserControls.PreviewPanelControl"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource BgPreview}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1,0,0,0">
+        <Grid Margin="14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="PREVIEW" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+
+            <Border Grid.Row="1" Background="{DynamicResource BgPanel}" CornerRadius="10" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Margin="0,10">
+                <Grid>
+                    <!-- حالت خالی -->
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPreviewVisible}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8A5;" FontSize="36" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Opacity="0.4"/>
+                        <TextBlock Text="Select a file to preview" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <!-- تصویر و PDF -->
+                    <Image Source="{Binding PreviewImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"
+                           Visibility="{Binding IsImagePreview, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                    <!-- متنی و اسناد -->
+                    <TextBox Text="{Binding PreviewText}" IsReadOnly="True" BorderThickness="0" Background="Transparent" 
+                             Visibility="{Binding IsTextPreview, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             Padding="10" FontFamily="Cascadia Mono, Consolas" FontSize="11.5"
+                             Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+
+                    <!-- مدیا -->
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="{Binding IsMediaPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8A5;" FontSize="38" Foreground="{DynamicResource Accent}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding SelectedItem.Type, StringFormat={}{0} File}" FontSize="12.5" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    </StackPanel>
+
+                    <!-- محتویات آرشیو ZIP -->
+                    <Grid Visibility="{Binding IsArchivePreview, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" Background="{DynamicResource BgSecondary}" Padding="10,8" CornerRadius="8,8,0,0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8B7;" Foreground="{DynamicResource Accent}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Archive Contents" FontWeight="SemiBold" FontSize="11.5" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="8,4">
+                            <ItemsControl ItemsSource="{Binding ArchiveEntries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" FontFamily="{StaticResource IconFont}" Text="&#xE8A5;" FontSize="13" Foreground="{DynamicResource TextSecondary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="11.5" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding SizeText}" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- متادیتا و مشخصات فایل انتخاب‌شده -->
+            <StackPanel Grid.Row="2">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedItem}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="{Binding SelectedItem.Name}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding SelectedItem.SizeText}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

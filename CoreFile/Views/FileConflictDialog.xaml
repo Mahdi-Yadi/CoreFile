@@ -1,0 +1,93 @@
+﻿<Window x:Class="CoreFile.Views.FileConflictDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Replace or Skip Files"
+        Width="480" Height="360"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Border Background="{DynamicResource BgPanel}"
+            BorderBrush="{DynamicResource BorderColor}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- عنوان پنجره -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,14">
+                <TextBlock Text="The destination already has a file with this name"
+                           FontWeight="Bold" FontSize="14"
+                           Foreground="{DynamicResource TextPrimary}"/>
+                <TextBlock x:Name="TxtFileName"
+                           Foreground="{DynamicResource TextSecondary}"
+                           FontSize="12" Margin="0,4,0,0"
+                           TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+
+            <!-- کارت مقایسه دو فایل -->
+            <Border Grid.Row="1" Background="{DynamicResource BgSecondary}" CornerRadius="8" Padding="12" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Source (فایل مبدا)" FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource Accent}"/>
+                        <TextBlock x:Name="TxtSourceSize" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="TxtSourceDate" FontSize="10.5" Foreground="{DynamicResource TextSecondary}"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Width="1" Background="{DynamicResource BorderColor}" Margin="10,0"/>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Destination (فایل مقصد)" FontWeight="SemiBold" FontSize="11" Foreground="#EF4444"/>
+                        <TextBlock x:Name="TxtDestSize" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="TxtDestDate" FontSize="10.5" Foreground="{DynamicResource TextSecondary}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- دکمه‌های عملیات اصلی -->
+            <StackPanel Grid.Row="2" VerticalAlignment="Center">
+                <Button x:Name="BtnReplace" Height="36" Margin="0,0,0,8"
+                        Background="{DynamicResource BgSecondary}" BorderThickness="0"
+                        Click="BtnReplace_Click" HorizontalContentAlignment="Left" Padding="12,0">
+                    <TextBlock Text="Replace the file in the destination (جایگزینی)" Foreground="{DynamicResource TextPrimary}"/>
+                </Button>
+
+                <Button x:Name="BtnSkip" Height="36" Margin="0,0,0,8"
+                        Background="{DynamicResource BgSecondary}" BorderThickness="0"
+                        Click="BtnSkip_Click" HorizontalContentAlignment="Left" Padding="12,0">
+                    <TextBlock Text="Skip this file (رد کردن این فایل)" Foreground="{DynamicResource TextPrimary}"/>
+                </Button>
+
+                <Button x:Name="BtnKeepBoth" Height="36"
+                        Background="{DynamicResource BgSecondary}" BorderThickness="0"
+                        Click="BtnKeepBoth_Click" HorizontalContentAlignment="Left" Padding="12,0">
+                    <TextBlock Text="Keep both files (نگه‌داشتن هر دو با نام جدید)" Foreground="{DynamicResource TextPrimary}"/>
+                </Button>
+            </StackPanel>
+
+            <!-- بخش پایینی (چک‌باکس اعمال به همه و انصراف) -->
+            <Grid Grid.Row="3" Margin="0,14,0,0">
+                <CheckBox x:Name="ChkApplyToAll" Content="Do this for all conflicts (اعمال برای همه)"
+                          VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}"/>
+                <Button Content="Cancel" Width="80" Height="28" HorizontalAlignment="Right"
+                        Background="Transparent" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}"
+                        Foreground="{DynamicResource TextSecondary}" Click="BtnCancel_Click"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

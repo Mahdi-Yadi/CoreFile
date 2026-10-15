@@ -1,0 +1,271 @@
+﻿<UserControl x:Class="CoreFile.Views.UserControls.ToolbarControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+        <!-- استایل دکمه‌های گزینه‌های منوهای کشویی -->
+        <Style x:Key="SettingsOptionBtn" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource BgSecondary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBg}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,1">
+        <Grid Margin="12,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- دکمه‌های ناوبری Back / Forward / Refresh -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Width="32" Height="30" Content="&#xE72B;" FontFamily="{StaticResource IconFont}" Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource TextPrimary}" Command="{Binding GoBackCommand}" ToolTip="Back (Alt+Left)"/>
+                <Button Width="32" Height="30" Content="&#xE72A;" FontFamily="{StaticResource IconFont}" Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource TextPrimary}" Command="{Binding GoForwardCommand}" ToolTip="Forward (Alt+Right)"/>
+                <Button Width="32" Height="30" Content="&#xE72C;" FontFamily="{StaticResource IconFont}" Background="Transparent" BorderThickness="0"
+                        Foreground="{DynamicResource TextPrimary}" Command="{Binding RefreshCommand}" ToolTip="Refresh (F5)" Margin="0,0,8,0"/>
+            </StackPanel>
+
+            <!-- آدرس‌بار Breadcrumb و جعبه جستجو -->
+            <Grid Grid.Column="1" VerticalAlignment="Center" Height="34">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{DynamicResource BgSecondary}" CornerRadius="6" Padding="6,0"
+                        Cursor="IBeam" MouseLeftButtonDown="AddressBar_MouseLeftButtonDown">
+                    <Grid>
+                        <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" Focusable="False">
+                            <ScrollViewer.Style>
+                                <Style TargetType="ScrollViewer">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAddressBarEditing}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ScrollViewer.Style>
+
+                            <ItemsControl ItemsSource="{Binding Breadcrumbs}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Content="{Binding Name}"
+                                                    Command="{Binding DataContext.NavigateToBreadcrumbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Foreground="{DynamicResource TextPrimary}"
+                                                    FontWeight="Medium" FontSize="12.5" Padding="5,3"/>
+                                            <TextBlock Text="&#xE76C;" FontFamily="{StaticResource IconFont}" FontSize="8"
+                                                       Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="2,0"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <TextBox x:Name="AddressTextBox"
+                                 Text="{Binding EditablePath, UpdateSourceTrigger=PropertyChanged}"
+                                 VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0"
+                                 Foreground="{DynamicResource TextPrimary}" FontSize="12.5"
+                                 KeyDown="AddressTextBox_KeyDown" LostFocus="AddressTextBox_LostFocus">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAddressBarEditing}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="6,0,0,0">
+                    <ToggleButton x:Name="SearchBtn" Width="34" Height="34" Background="{DynamicResource BgSecondary}" BorderThickness="0"
+                                  Content="&#xE721;" FontFamily="{StaticResource IconFont}" Foreground="{DynamicResource TextSecondary}"/>
+                    <Popup IsOpen="{Binding IsChecked, ElementName=SearchBtn, Mode=TwoWay}"
+                           StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=SearchBtn}"
+                           Placement="Bottom" HorizontalOffset="-240" VerticalOffset="6">
+                        <Border Width="280" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}"
+                                BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="Search folder..." FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                                <TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" Height="30"
+                                         VerticalContentAlignment="Center" Padding="6,0"/>
+                                <CheckBox Content="Search subdirectories" IsChecked="{Binding IsDeepSearchEnabled}" Margin="0,8,0,0" Foreground="{DynamicResource TextSecondary}"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+            </Grid>
+
+            <!-- دکمه‌های ابزار عملیاتی -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+
+                <!-- پوشه جدید -->
+                <Button Height="30" Padding="10,0" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding CreateFolderCommand}" ToolTip="New folder (Ctrl+Shift+N)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8F4;" Margin="0,0,6,0"/>
+                        <TextBlock Text="New" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- ترمینال -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,4,0">
+                    <Button Height="30" Padding="8,0" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                            Command="{Binding OpenTerminalCommand}" ToolTip="Open Terminal here (Ctrl+Shift+T)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE756;" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Terminal" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <ToggleButton x:Name="TerminalMenuBtn" Width="18" Height="30" Background="Transparent" BorderThickness="0"
+                                  Content="&#xE70D;" FontFamily="{StaticResource IconFont}" FontSize="8" Foreground="{DynamicResource TextSecondary}"/>
+                    <Popup IsOpen="{Binding IsChecked, ElementName=TerminalMenuBtn, Mode=TwoWay}"
+                           StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=TerminalMenuBtn}"
+                           Placement="Bottom" HorizontalOffset="-130" VerticalOffset="4">
+                        <Border Width="160" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="6">
+                            <StackPanel>
+                                <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding OpenTerminalCommand}" CommandParameter="wt" Click="CloseTerminalPopup_Click">
+                                    <TextBlock Text="Windows Terminal"/>
+                                </Button>
+                                <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding OpenTerminalCommand}" CommandParameter="powershell" Click="CloseTerminalPopup_Click">
+                                    <TextBlock Text="PowerShell"/>
+                                </Button>
+                                <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding OpenTerminalCommand}" CommandParameter="cmd" Click="CloseTerminalPopup_Click">
+                                    <TextBlock Text="Command Prompt"/>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+
+                <!-- منوی Group By -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="2,0,4,0">
+                    <ToggleButton x:Name="GroupByBtn" Height="30" Padding="8,0" Background="Transparent" BorderThickness="0"
+                                  Foreground="{DynamicResource TextPrimary}" ToolTip="Group By">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8C0;" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Group" FontSize="11.5" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ToggleButton>
+                    <Popup IsOpen="{Binding IsChecked, ElementName=GroupByBtn, Mode=TwoWay}"
+                           StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=GroupByBtn}"
+                           Placement="Bottom" HorizontalOffset="-80" VerticalOffset="4">
+                        <Border Width="160" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="6">
+                            <StackPanel>
+                                <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding SetGroupByCommand}" CommandParameter="None" Click="CloseGroupPopup_Click">
+                                    <TextBlock Text="(None) بدون گروه"/>
+                                </Button>
+                                <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding SetGroupByCommand}" CommandParameter="Type" Click="CloseGroupPopup_Click">
+                                    <TextBlock Text="Type (نوع فایل)"/>
+                                </Button>
+                                <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding SetGroupByCommand}" CommandParameter="Date" Click="CloseGroupPopup_Click">
+                                    <TextBlock Text="Date (تاریخ تغییر)"/>
+                                </Button>
+                                <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding SetGroupByCommand}" CommandParameter="Size" Click="CloseGroupPopup_Click">
+                                    <TextBlock Text="Size (حجم فایل)"/>
+                                </Button>
+                                <Button Style="{StaticResource SettingsOptionBtn}" Command="{Binding SetGroupByCommand}" CommandParameter="Name" Click="CloseGroupPopup_Click">
+                                    <TextBlock Text="Name (نام الفبایی)"/>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+
+                <Button Width="32" Height="30" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding RenameCommand}" ToolTip="Rename (F2)">
+                    <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8AC;"/>
+                </Button>
+
+                <!-- تغییر نام دسته‌جمعی -->
+                <Button Height="30" Padding="8,0" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding OpenBatchRenameCommand}" ToolTip="Batch Rename">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8D2;" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Batch" FontSize="11.5" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <!-- Undo / Redo -->
+                <Button Width="32" Height="30" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding UndoCommand}" ToolTip="Undo (Ctrl+Z)">
+                    <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE7A7;"/>
+                </Button>
+                <Button Width="32" Height="30" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding RedoCommand}" ToolTip="Redo (Ctrl+Y)">
+                    <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE7A6;"/>
+                </Button>
+
+                <!-- عملیات کلیپ‌بورد -->
+                <Button Width="32" Height="30" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding CutCommand}" ToolTip="Cut">
+                    <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8C6;"/>
+                </Button>
+                <Button Width="32" Height="30" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding CopyCommand}" ToolTip="Copy">
+                    <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8C8;"/>
+                </Button>
+                <Button Width="32" Height="30" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding PasteCommand}" ToolTip="Paste">
+                    <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE77F;"/>
+                </Button>
+                <Button Width="32" Height="30" Background="Transparent" BorderThickness="0" Foreground="#EF4444"
+                        Command="{Binding DeleteCommand}" ToolTip="Delete">
+                    <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE74D;"/>
+                </Button>
+
+                <!-- ZIP و Extract -->
+                <Button Height="30" Padding="8,0" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding CompressSelectedCommand}" ToolTip="Compress to ZIP">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8F7;" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="ZIP" FontSize="11.5" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Height="30" Padding="8,0" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}"
+                        Command="{Binding ExtractSelectedCommand}" ToolTip="Extract ZIP here">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8B7;" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Extract" FontSize="11.5" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

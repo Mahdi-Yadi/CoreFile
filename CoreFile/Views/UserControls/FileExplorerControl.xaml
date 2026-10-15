@@ -1,0 +1,375 @@
+﻿<UserControl x:Class="CoreFile.Views.UserControls.FileExplorerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:CoreFile.ViewModels">
+
+    <UserControl.Resources>
+        <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    </UserControl.Resources>
+
+    <ListView x:Name="ItemsListView"
+              ItemsSource="{Binding FilteredItems}"
+              SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+              SelectionMode="Extended"
+              SelectionChanged="FilesList_SelectionChanged"
+              AllowDrop="True"
+              DragOver="FileListView_DragOver"
+              Drop="FileListView_Drop"
+              BorderThickness="0" Background="Transparent"
+              ScrollViewer.CanContentScroll="True"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+              ScrollViewer.VerticalScrollBarVisibility="Auto">
+
+        <!-- ۱. استایل سرگروه‌ها (GroupStyle) -->
+        <ListView.GroupStyle>
+            <GroupStyle>
+                <GroupStyle.HeaderTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource BgSecondary}" Padding="10,5" Margin="0,8,0,2" CornerRadius="6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE70D;" FontSize="10" Foreground="{DynamicResource Accent}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="11.5" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding ItemCount, StringFormat=' ({0})'}" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </GroupStyle.HeaderTemplate>
+            </GroupStyle>
+        </ListView.GroupStyle>
+
+        <!-- ۲. استایل نماهای مختلف (Icons / List / Details) -->
+        <ListView.Style>
+            <Style TargetType="ListView">
+                <Style.Triggers>
+                    <!-- حالت Large Icons -->
+                    <DataTrigger Binding="{Binding CurrentViewMode}" Value="{x:Static vm:ViewMode.LargeIcons}">
+                        <Setter Property="ItemsPanel">
+                            <Setter.Value>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" 
+                                               Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}"/>
+                                </ItemsPanelTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListView">
+                                    <ScrollViewer Focusable="False" Padding="{TemplateBinding Padding}">
+                                        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+
+                    <!-- حالت Small Icons -->
+                    <DataTrigger Binding="{Binding CurrentViewMode}" Value="{x:Static vm:ViewMode.SmallIcons}">
+                        <Setter Property="ItemsPanel">
+                            <Setter.Value>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" 
+                                               Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}"/>
+                                </ItemsPanelTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListView">
+                                    <ScrollViewer Focusable="False" Padding="{TemplateBinding Padding}">
+                                        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+
+                    <!-- حالت List -->
+                    <DataTrigger Binding="{Binding CurrentViewMode}" Value="{x:Static vm:ViewMode.List}">
+                        <Setter Property="ItemsPanel">
+                            <Setter.Value>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel Orientation="Vertical"/>
+                                </ItemsPanelTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListView">
+                                    <ScrollViewer Focusable="False" Padding="{TemplateBinding Padding}">
+                                        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ListView.Style>
+
+        <!-- ۳. کانتینر آیتم‌ها -->
+        <ListView.ItemContainerStyle>
+            <Style TargetType="ListViewItem">
+                <Setter Property="Margin" Value="4,2"/>
+                <EventSetter Event="MouseDoubleClick" Handler="FilesList_MouseDoubleClick"/>
+                <EventSetter Event="PreviewMouseRightButtonDown" Handler="FileItem_PreviewMouseRightButtonDown"/>
+                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="FileItem_PreviewMouseLeftButtonDown"/>
+                <EventSetter Event="MouseMove" Handler="FileItem_MouseMove"/>
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="6" Padding="6,2">
+                                <GridViewRowPresenter VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+
+                <Style.Triggers>
+                    <!-- تمپلیت Large Icons -->
+                    <DataTrigger Binding="{Binding DataContext.CurrentViewMode, RelativeSource={RelativeSource AncestorType=ListView}}" Value="{x:Static vm:ViewMode.LargeIcons}">
+                        <Setter Property="Width" Value="108"/>
+                        <Setter Property="Height" Value="122"/>
+                        <Setter Property="Margin" Value="4"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Border x:Name="IconBorder" Background="Transparent" CornerRadius="8" Padding="6,8">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="70"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource IconFont}" FontSize="48" Foreground="#EAB308"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsDirectory}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <Border CornerRadius="4" ClipToBounds="True">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsDirectory}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+
+                                                    <Grid Width="64" Height="64">
+                                                        <Image Source="{Binding Icon}" Width="44" Height="44"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                               RenderOptions.BitmapScalingMode="HighQuality">
+                                                            <Image.Style>
+                                                                <Style TargetType="Image">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Thumbnail}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Image.Style>
+                                                        </Image>
+
+                                                        <Image Source="{Binding Thumbnail}" Stretch="Uniform"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                               RenderOptions.BitmapScalingMode="HighQuality">
+                                                            <Image.Style>
+                                                                <Style TargetType="Image">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Thumbnail}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Image.Style>
+                                                        </Image>
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+
+                                            <TextBlock Grid.Row="1" Text="{Binding Name}" Foreground="{DynamicResource TextPrimary}" 
+                                                       TextAlignment="Center" HorizontalAlignment="Center"
+                                                       TextWrapping="Wrap" MaxHeight="32" TextTrimming="CharacterEllipsis" 
+                                                       FontSize="11" Margin="0,4,0,0"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="IconBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="IconBorder" Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+
+                    <!-- تمپلیت Small Icons -->
+                    <DataTrigger Binding="{Binding DataContext.CurrentViewMode, RelativeSource={RelativeSource AncestorType=ListView}}" Value="{x:Static vm:ViewMode.SmallIcons}">
+                        <Setter Property="Width" Value="160"/>
+                        <Setter Property="Height" Value="34"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Border x:Name="SmallBorder" Background="Transparent" CornerRadius="6" Padding="6,0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Image Source="{Binding Icon}" Width="18" Height="18" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextPrimary}" 
+                                                       TextTrimming="CharacterEllipsis" MaxWidth="120" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="SmallBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="SmallBorder" Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+
+                    <!-- تمپلیت List -->
+                    <DataTrigger Binding="{Binding DataContext.CurrentViewMode, RelativeSource={RelativeSource AncestorType=ListView}}" Value="{x:Static vm:ViewMode.List}">
+                        <Setter Property="Height" Value="32"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Border x:Name="ListBorder" Background="Transparent" CornerRadius="6" Padding="8,0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="ListBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="ListBorder" Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ListView.ItemContainerStyle>
+
+        <!-- ۴. ستون‌های حالت Details -->
+        <ListView.View>
+            <GridView>
+                <GridViewColumn Width="280">
+                    <GridViewColumn.Header>
+                        <Button Content="Name" Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"
+                                Command="{Binding SortCommand}" CommandParameter="Name"/>
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Grid Width="20" Height="20" Margin="0,0,8,0">
+                                    <Image Source="{Binding Icon}" RenderOptions.BitmapScalingMode="HighQuality">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDirectory}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                    <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource IconFont}" FontSize="15" Foreground="#EAB308" HorizontalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDirectory}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                                <TextBlock Text="{Binding Name}" FontWeight="Medium" Foreground="{DynamicResource TextPrimary}" 
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+
+                <GridViewColumn Width="100">
+                    <GridViewColumn.Header>
+                        <Button Content="Type" Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"
+                                Command="{Binding SortCommand}" CommandParameter="Type"/>
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Type}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+
+                <GridViewColumn Width="90">
+                    <GridViewColumn.Header>
+                        <Button Content="Size" Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"
+                                Command="{Binding SortCommand}" CommandParameter="Size"/>
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding SizeText}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+
+                <GridViewColumn Width="130">
+                    <GridViewColumn.Header>
+                        <Button Content="Modified" Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource TextSecondary}" FontWeight="SemiBold"
+                                Command="{Binding SortCommand}" CommandParameter="ModifiedDate"/>
+                    </GridViewColumn.Header>
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ModifiedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}" 
+                                       Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+            </GridView>
+        </ListView.View>
+    </ListView>
+</UserControl>

@@ -3,23 +3,67 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
-
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/Colors.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        
+            <!-- فونت آیکون‌ها -->
+            <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-            <!-- مقادیر پیش‌فرض تم لایت -->
-            <SolidColorBrush x:Key="BgMain" Color="#FAFAFA"/>
-            <SolidColorBrush x:Key="BgPanel" Color="#FFFFFF"/>
-            <SolidColorBrush x:Key="BgSecondary" Color="#F3F3F3"/>
-            <SolidColorBrush x:Key="BgPreview" Color="#F9F9F9"/>
-            <SolidColorBrush x:Key="BorderColor" Color="#E5E5E5"/>
-            <SolidColorBrush x:Key="TextPrimary" Color="#222222"/>
-            <SolidColorBrush x:Key="TextSecondary" Color="#666666"/>
-            <SolidColorBrush x:Key="HoverBg" Color="#EAEAEA"/>
+            <!-- استایل کارت‌های درایو و سایدبار (سراسری) -->
+            <Style x:Key="DriveCardButton" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Margin" Value="0,3"/>
+                <Setter Property="MinHeight" Value="48"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="CardBorder" Background="{TemplateBinding Background}" CornerRadius="8" Padding="10,6">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="CardBorder" Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- استایل گزینه‌های منوهای کشویی و پاپ‌آپ‌ها (سراسری) -->
+            <Style x:Key="SettingsOptionBtn" TargetType="Button">
+                <Setter Property="Background" Value="{DynamicResource BgSecondary}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Margin" Value="0,2"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="Padding" Value="10,0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBg}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- تم پیش‌فرض لایت یا دارک -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/ColorsDark.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
