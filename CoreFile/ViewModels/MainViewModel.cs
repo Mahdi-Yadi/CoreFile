@@ -2,10 +2,17 @@
 using CommunityToolkit.Mvvm.Input;
 using CoreFile.Models;
 using CoreFile.Services;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -14,8 +21,29 @@ namespace CoreFile.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly FileSystemService _fileSystemService;
+    private readonly FileOperationService _fileOperationService = new();
     private readonly Stack<string> _backHistory = new();
     private readonly Stack<string> _forwardHistory = new();
+    private CancellationTokenSource? _searchCts;
+    private readonly List<FileItem> _allLoadedItems = []; // نگهداری لیست کامل جهت فیلتر محلی
+
+    [ObservableProperty]
+    private string searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private bool isDeepSearchEnabled; // آیا جستجو در زیرپوشه‌ها انجام شود؟
+
+    [ObservableProperty]
+    private bool isSearching;
+    // View اختصاصی برای فیلتر و مرتب‌سازی سریع روی ObservableCollection
+    public ICollectionView FilteredItems { get; }
+
+    private FileSystemWatcher? _watcher;
+    private ClipboardState? _clipboard;
+    private CancellationTokenSource? _cts;
+
+    private string _currentSortColumn = string.Empty;
+    private bool _isSortAscending = true;
 
     [ObservableProperty]
     private string currentPath = string.Empty;
@@ -23,7 +51,6 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private FileItem? selectedItem;
 
-    // پراپرتی جدید جهت ذخیره آیتم‌های انتخابی چندتایی
     [ObservableProperty]
     private List<FileItem> selectedItems = [];
 
@@ -33,16 +60,46 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string statusText = "Ready";
 
+    [ObservableProperty]
+    private double operationProgress;
+
+    [ObservableProperty]
+    private bool isOperationRunning;
+
+    [ObservableProperty]
+    private ImageSource? previewImage;
+
+    [ObservableProperty]
+    private string? previewText;
+
+    [ObservableProperty]
+    private bool isPreviewVisible;
+
+    [ObservableProperty]
+    private bool isImagePreview;
+
+    [ObservableProperty]
+    private bool isTextPreview;
+
+    [ObservableProperty]
+    private bool isMediaPreview;
+
+    [ObservableProperty]
+    private bool isDarkMode;
+
     public ObservableCollection<FileItem> Drives { get; } = [];
     public ObservableCollection<FileItem> Items { get; } = [];
 
     public MainViewModel()
     {
         _fileSystemService = new FileSystemService();
+
+        // تنظیم ICollectionView جهت فیلتر و رندر سریع
+        FilteredItems = CollectionViewSource.GetDefaultView(Items);
+        FilteredItems.Filter = FilterFileItem;
+
         LoadDrives();
     }
-
-    private FileSystemWatcher? _watcher;
 
     private void SetupWatcher(string path)
     {
@@ -56,9 +113,9 @@ public partial class MainViewModel : ObservableObject
             EnableRaisingEvents = true
         };
 
-        _watcher.Created += (s, e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
-        _watcher.Deleted += (s, e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
-        _watcher.Renamed += (s, e) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
+        _watcher.Created += (s, e) => Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
+        _watcher.Deleted += (s, e) => Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
+        _watcher.Renamed += (s, e) => Application.Current.Dispatcher.InvokeAsync(RefreshAsync);
     }
 
     private void LoadDrives()
@@ -76,17 +133,14 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenDriveAsync(FileItem? drive)
     {
-        if (drive is null)
-            return;
-
+        if (drive is null) return;
         await NavigateToAsync(drive.FullPath, addToHistory: true);
     }
 
     [RelayCommand]
     private async Task OpenItemAsync(FileItem? item)
     {
-        if (item is null)
-            return;
+        if (item is null) return;
 
         if (item.IsDirectory)
         {
@@ -99,8 +153,7 @@ public partial class MainViewModel : ObservableObject
 
     private async Task NavigateToAsync(string path, bool addToHistory)
     {
-        if (!Directory.Exists(path))
-            return;
+        if (!Directory.Exists(path)) return;
 
         if (string.Equals(CurrentPath, path, StringComparison.OrdinalIgnoreCase))
         {
@@ -154,8 +207,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task GoBackAsync()
     {
-        if (_backHistory.Count == 0)
-            return;
+        if (_backHistory.Count == 0) return;
 
         var previousPath = _backHistory.Pop();
 
@@ -170,8 +222,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task GoForwardAsync()
     {
-        if (_forwardHistory.Count == 0)
-            return;
+        if (_forwardHistory.Count == 0) return;
 
         var nextPath = _forwardHistory.Pop();
 
@@ -197,8 +248,7 @@ public partial class MainViewModel : ObservableObject
 
     private static void OpenFile(string path)
     {
-        if (!File.Exists(path))
-            return;
+        if (!File.Exists(path)) return;
 
         try
         {
@@ -210,21 +260,10 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
-            // NotificationService
+            // مدیریت خطا در صورت عدم دسترسی
         }
     }
 
-    [ObservableProperty]
-    private double operationProgress;
-
-    [ObservableProperty]
-    private bool isOperationRunning;
-
-    private ClipboardState? _clipboard;
-    private CancellationTokenSource? _cts;
-    private readonly FileOperationService _fileOperationService = new();
-
-    // پشتیبانی از کپی چندتایی
     [RelayCommand]
     private void Copy()
     {
@@ -232,7 +271,6 @@ public partial class MainViewModel : ObservableObject
         if (targets.Count == 0) return;
 
         var paths = targets.Select(x => x.FullPath).ToArray();
-
         _clipboard = new ClipboardState(paths.ToList(), OperationType.Copy);
 
         var data = new DataObject(DataFormats.FileDrop, paths);
@@ -241,7 +279,6 @@ public partial class MainViewModel : ObservableObject
         StatusText = $"Copied {paths.Length} item(s) to clipboard.";
     }
 
-    // پشتیبانی از Cut چندتایی
     [RelayCommand]
     private void Cut()
     {
@@ -249,7 +286,6 @@ public partial class MainViewModel : ObservableObject
         if (targets.Count == 0) return;
 
         var paths = targets.Select(x => x.FullPath).ToArray();
-
         _clipboard = new ClipboardState(paths.ToList(), OperationType.Cut);
 
         var data = new DataObject(DataFormats.FileDrop, paths);
@@ -327,7 +363,6 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    // پشتیبانی از حذف چندتایی
     [RelayCommand]
     private async Task DeleteAsync()
     {
@@ -403,24 +438,6 @@ public partial class MainViewModel : ObservableObject
             StatusText = $"Error renaming: {ex.Message}";
         }
     }
-
-    [ObservableProperty]
-    private ImageSource? previewImage;
-
-    [ObservableProperty]
-    private string? previewText;
-
-    [ObservableProperty]
-    private bool isPreviewVisible;
-
-    [ObservableProperty]
-    private bool isImagePreview;
-
-    [ObservableProperty]
-    private bool isTextPreview;
-
-    [ObservableProperty]
-    private bool isMediaPreview;
 
     partial void OnSelectedItemChanged(FileItem? value)
     {
@@ -504,15 +521,12 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    [ObservableProperty]
-    private bool isDarkMode;
-
     [RelayCommand]
     private void ToggleTheme(string theme)
     {
         IsDarkMode = theme == "Dark";
 
-        var resources = System.Windows.Application.Current.Resources;
+        var resources = Application.Current.Resources;
 
         if (IsDarkMode)
         {
@@ -523,6 +537,7 @@ public partial class MainViewModel : ObservableObject
             resources["BorderColor"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3F3F46"));
             resources["TextPrimary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F1F1F1"));
             resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
+            resources["HoverBg"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A2D2E"));
         }
         else
         {
@@ -533,6 +548,7 @@ public partial class MainViewModel : ObservableObject
             resources["BorderColor"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E5E5E5"));
             resources["TextPrimary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#222222"));
             resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#666666"));
+            resources["HoverBg"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E8E8E8"));
         }
     }
 
@@ -542,11 +558,6 @@ public partial class MainViewModel : ObservableObject
         _cts?.Cancel();
         StatusText = "Cancelling operation...";
     }
-
-
-    // اضافه کردن این فیلدها جهت مدیریت مرتب‌سازی
-    private string _currentSortColumn = string.Empty;
-    private bool _isSortAscending = true;
 
     [RelayCommand]
     private void Sort(string columnName)
@@ -563,19 +574,6 @@ public partial class MainViewModel : ObservableObject
             _isSortAscending = true;
         }
 
-        Func<FileItem, object?> keySelector = columnName switch
-        {
-            "Name" => x => x.Name,
-            "Type" => x => x.Type,
-            "Size" => x => x.IsDirectory ? -1 : x.SizeBytes, // پوشه‌ها همیشه بالا یا ثابت بمانند
-            "CreatedDate" => x => x.CreatedDate,
-            "ModifiedDate" => x => x.ModifiedDate,
-            _ => x => x.Name
-        };
-
-        //var sorted = _isSortAscending
-        //    ? Items.OrderBy(keySelector).ToList()
-        //    : Items.OrderByDescending(keySelector).ToList();
         IEnumerable<FileItem> sorted = columnName switch
         {
             "Name" => _isSortAscending ? Items.OrderBy(x => x.Name) : Items.OrderByDescending(x => x.Name),
@@ -585,11 +583,144 @@ public partial class MainViewModel : ObservableObject
             "ModifiedDate" => _isSortAscending ? Items.OrderBy(x => x.ModifiedDate) : Items.OrderByDescending(x => x.ModifiedDate),
             _ => Items.OrderBy(x => x.Name)
         };
+
+        var list = sorted.ToList();
         Items.Clear();
-        foreach (var item in sorted)
+        foreach (var item in list)
         {
             Items.Add(item);
         }
     }
 
+    // منطق فیلتر کردن لحظه‌ای روی عناصر
+    private bool FilterFileItem(object obj)
+    {
+        if (obj is not FileItem item) return false;
+        if (string.IsNullOrWhiteSpace(SearchQuery)) return true;
+
+        // چک کردن نام فایل یا پسوند
+        return item.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
+               item.Extension.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // هنگام تغییر متن جستجو فراخوانی می‌شود
+    partial void OnSearchQueryChanged(string value)
+    {
+        if (IsDeepSearchEnabled)
+        {
+            // اگر جستجوی عمیق فعال است، با تاخیر کوچک (Debounce) در دیسک می‌گردد
+            _ = TriggerDeepSearchAsync(value);
+        }
+        else
+        {
+            // فیلتر سریع و محلی بدون مراجعه به دیسک
+            FilteredItems.Refresh();
+            UpdateStatusWithFilterCount();
+        }
+    }
+
+    partial void OnIsDeepSearchEnabledChanged(bool value)
+    {
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            OnSearchQueryChanged(SearchQuery);
+        }
+    }
+
+    private async Task TriggerDeepSearchAsync(string query)
+    {
+        _searchCts?.Cancel();
+        _searchCts = new CancellationTokenSource();
+        var token = _searchCts.Token;
+
+        if (string.IsNullOrWhiteSpace(query) || string.IsNullOrEmpty(CurrentPath))
+        {
+            await RefreshAsync();
+            return;
+        }
+
+        try
+        {
+            // تاخیر ۳۰۰ میلی‌ثانیه‌ای جهت جلوگیری از اجرای جستجو با هر کلید (Debounce)
+            await Task.Delay(300, token);
+
+            IsSearching = true;
+            StatusText = "Searching...";
+
+            var results = await Task.Run(() => SearchDirectoryRecursive(CurrentPath, query, token), token);
+
+            if (!token.IsCancellationRequested)
+            {
+                Items.Clear();
+                foreach (var item in results)
+                {
+                    Items.Add(item);
+                }
+                StatusText = $"Found {Items.Count} items for '{query}'";
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // جستجوی قبلی لغو شده است
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                IsSearching = false;
+            }
+        }
+    }
+
+    private List<FileItem> SearchDirectoryRecursive(string path, string query, CancellationToken token)
+    {
+        var matchedItems = new List<FileItem>();
+        try
+        {
+            var options = new EnumerationOptions
+            {
+                IgnoreInaccessible = true,
+                RecurseSubdirectories = true,
+                AttributesToSkip = FileAttributes.Hidden | FileAttributes.System
+            };
+
+            var dirInfo = new DirectoryInfo(path);
+            foreach (var file in dirInfo.EnumerateFileSystemInfos($"*{query}*", options))
+            {
+                if (token.IsCancellationRequested) break;
+
+                bool isDir = (file.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
+                matchedItems.Add(new FileItem
+                {
+                    Name = file.Name,
+                    FullPath = file.FullName,
+                    IsDirectory = isDir,
+                    Extension = isDir ? "" : file.Extension,
+                    CreatedDate = file.CreationTime,
+                    ModifiedDate = file.LastWriteTime,
+                    SizeBytes = isDir ? 0 : ((FileInfo)file).Length
+                });
+
+                // حد مجاز برای عدم قفل شدن حافظه در جستجوهای سنگین
+                if (matchedItems.Count >= 1000) break;
+            }
+        }
+        catch { }
+
+        return matchedItems;
+    }
+
+    [RelayCommand]
+    private void ClearSearch()
+    {
+        SearchQuery = string.Empty;
+    }
+
+    private void UpdateStatusWithFilterCount()
+    {
+        int count = FilteredItems.Cast<object>().Count();
+        StatusText = string.IsNullOrWhiteSpace(SearchQuery)
+            ? $"{Items.Count} Items"
+            : $"{count} of {Items.Count} Items (Filtered)";
+    }
 }

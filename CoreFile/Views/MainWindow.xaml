@@ -3,190 +3,214 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="CoreFile"
-        Width="1150"
-        Height="720"
-        MinWidth="850"
-        MinHeight="550"
+        Width="1240"
+        Height="780"
+        MinWidth="920"
+        MinHeight="600"
+        WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgMain}"
+        FontFamily="Segoe UI Variable Text, Segoe UI, Vazirmatn"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
+        xmlns:converters="clr-namespace:CoreFile.Converters"
         UseLayoutRounding="True">
+    
+    <WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="48"
+                            GlassFrameThickness="0"
+                            CornerRadius="8"
+                            ResizeBorderThickness="6"/>
+    </WindowChrome.WindowChrome>
 
     <Window.Resources>
-        <!-- استایل مدرن دکمه‌های ابزار -->
-        <Style x:Key="ModernToolButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BgSecondary}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.4"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- استایل دکمه درایوها -->
-        <Style x:Key="DriveItemButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource HoverBg}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BgSecondary}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- استایل مدرن سرستون‌های GridView Header -->
-        <Style TargetType="GridViewColumnHeader">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="GridViewColumnHeader">
-                        <Border x:Name="HeaderBorder" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HeaderBorder" Property="Background" Value="{DynamicResource HoverBg}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- دکمه ویژه درون Header برای کلیک و مرتب‌سازی -->
-        <Style x:Key="SortableHeaderButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="Transparent">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Assets/Styles/WindowStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
-
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="28"/>
         </Grid.RowDefinitions>
-
-        <!-- Top Navigation Bar -->
         <Border Grid.Row="0" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,0,1">
-            <Grid Margin="10,0">
+            <Grid Margin="8,0,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0" Content="←" Width="34" Height="32" Margin="0,0,2,0" Style="{StaticResource ModernToolButton}" ToolTip="Back" Command="{Binding GoBackCommand}"/>
-                <Button Grid.Column="1" Content="→" Width="34" Height="32" Margin="0,0,2,0" Style="{StaticResource ModernToolButton}" ToolTip="Forward" Command="{Binding GoForwardCommand}"/>
-                <Button Grid.Column="2" Content="⟳" Width="34" Height="32" Margin="0,0,10,0" Style="{StaticResource ModernToolButton}" ToolTip="Refresh" Command="{Binding RefreshCommand}"/>
+                <!-- Navigation Buttons -->
+                <Button Grid.Column="0" Style="{StaticResource ModernNavButton}" ToolTip="Back" Command="{Binding GoBackCommand}">
+                    <TextBlock Text="&#xE72B;" Style="{StaticResource FluentIcon}"/>
+                </Button>
+                <Button Grid.Column="1" Style="{StaticResource ModernNavButton}" ToolTip="Forward" Command="{Binding GoForwardCommand}">
+                    <TextBlock Text="&#xE72A;" Style="{StaticResource FluentIcon}"/>
+                </Button>
+                <Button Grid.Column="2" Style="{StaticResource ModernNavButton}" Margin="2,0,8,0" ToolTip="Refresh" Command="{Binding RefreshCommand}">
+                    <TextBlock Text="&#xE72C;" Style="{StaticResource FluentIcon}"/>
+                </Button>
 
-                <Border Grid.Column="3" Height="32" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="4">
-                    <TextBox Text="{Binding CurrentPath}" IsReadOnly="True" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0" Foreground="{DynamicResource TextPrimary}" FontSize="12"/>
+                <!-- Address Bar -->
+                <Border Grid.Column="3" Height="32" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="6" Padding="4,0" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Grid VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="&#xE8B9;" Style="{StaticResource FluentIcon}" Foreground="{DynamicResource TextSecondary}" Margin="8,0,6,0" FontSize="12"/>
+                        <TextBox Grid.Column="1" Text="{Binding CurrentPath}" IsReadOnly="True" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="2,0" Foreground="{DynamicResource TextPrimary}" FontSize="12.5"/>
+                    </Grid>
                 </Border>
 
-                <ToggleButton x:Name="SettingsButton" Grid.Column="4" Content="⚙" Width="34" Height="32" Margin="8,0,0,0" Style="{StaticResource {x:Type ToggleButton}}" ToolTip="Settings"/>
+                <!-- Search Box Section (افزوده شدن IsHitTestVisibleInChrome) -->
+                <StackPanel Grid.Column="3" 
+                    Orientation="Horizontal" 
+                    Margin="10,5" 
+                    HorizontalAlignment="Right"
+                    shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Border Background="{DynamicResource BgPanel}" 
+                    CornerRadius="4" 
+                    BorderBrush="{DynamicResource BorderColor}" 
+                    BorderThickness="1" 
+                    Width="250" 
+                    Height="32">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="🔍" 
+                               VerticalAlignment="Center" 
+                               Margin="8,0,5,0" 
+                               FontSize="12" 
+                               Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBox Grid.Column="1" 
+                            Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                             Background="Transparent" 
+                             BorderThickness="0" 
+                             VerticalAlignment="Center" 
+                             Foreground="{DynamicResource TextPrimary}"
+                             Padding="2,0"/>
+                            <Button Grid.Column="2" 
+                            Command="{Binding ClearSearchCommand}" 
+                            Content="✕" 
+                            Background="Transparent" 
+                            BorderThickness="0" 
+                            Foreground="{DynamicResource TextSecondary}" 
+                            Margin="0,0,5,0"
+                            Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SearchQuery, Converter={StaticResource StringToVisibilityConverter}}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                    </Border>
 
-                <Popup IsOpen="{Binding IsChecked, ElementName=SettingsButton}" StaysOpen="False" PlacementTarget="{Binding ElementName=SettingsButton}" Placement="Bottom">
-                    <Border Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="4" Padding="12" Width="180">
+                    <CheckBox Content="Deep Search" 
+                      IsChecked="{Binding IsDeepSearchEnabled}" 
+                      VerticalAlignment="Center" 
+                      Margin="10,0,0,0" 
+                      Foreground="{DynamicResource TextPrimary}"/>
+
+                    <ProgressBar IsIndeterminate="True" 
+                         Width="60" Height="4" 
+                         Margin="10,0,0,0" 
+                         VerticalAlignment="Center">
+                        <ProgressBar.Style>
+                            <Style TargetType="ProgressBar">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSearching}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ProgressBar.Style>
+                    </ProgressBar>
+                </StackPanel>
+
+                <!-- Settings Button (بدون پس‌زمینه و شفاف) -->
+                <ToggleButton x:Name="SettingsButton" 
+                      Grid.Column="4" 
+                      Width="34" 
+                      Height="32" 
+                      Margin="8,0,8,0" 
+                      Background="Transparent"
+                      BorderThickness="0"
+                      ToolTip="Settings" 
+                      shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <TextBlock Text="&#xE713;" Style="{StaticResource FluentIcon}"/>
+                </ToggleButton>
+
+                <!-- Window Controls -->
+                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Top" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button Style="{StaticResource WindowControlButtonStyle}" Click="MinimizeButton_Click" ToolTip="Minimize">
+                        <TextBlock Text="&#xE921;" Style="{StaticResource FluentIcon}" FontSize="10"/>
+                    </Button>
+                    <Button Style="{StaticResource WindowControlButtonStyle}" Click="MaximizeButton_Click" ToolTip="Maximize">
+                        <TextBlock x:Name="MaximizeIcon" Text="&#xE922;" Style="{StaticResource FluentIcon}" FontSize="10"/>
+                    </Button>
+                    <Button Style="{StaticResource WindowCloseButtonStyle}" Click="CloseButton_Click" ToolTip="Close">
+                        <TextBlock Text="&#xE8BB;" Style="{StaticResource FluentIcon}" FontSize="10"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Settings Popup -->
+                <Popup IsOpen="{Binding IsChecked, ElementName=SettingsButton}" StaysOpen="False" PlacementTarget="{Binding ElementName=SettingsButton}" Placement="Bottom" PopupAnimation="Fade" AllowsTransparency="True">
+                    <Border Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="14" Width="200" Margin="0,4,0,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.12" Color="Black"/>
+                        </Border.Effect>
                         <StackPanel>
-                            <TextBlock Text="App Theme" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                            <TextBlock Text="Theme Settings" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10" FontSize="13"/>
                             <RadioButton Content="Light Mode" IsChecked="{Binding IsDarkMode, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" 
-                                         Command="{Binding ToggleThemeCommand}" CommandParameter="Light" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                 Command="{Binding ToggleThemeCommand}" CommandParameter="Light" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
                             <RadioButton Content="Dark Mode" IsChecked="{Binding IsDarkMode}" 
-                                         Command="{Binding ToggleThemeCommand}" CommandParameter="Dark" Foreground="{DynamicResource TextPrimary}"/>
+                                 Command="{Binding ToggleThemeCommand}" CommandParameter="Dark" Foreground="{DynamicResource TextPrimary}"/>
                         </StackPanel>
                     </Border>
                 </Popup>
             </Grid>
         </Border>
-
-        <!-- Main Workspace -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="230"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="300" MaxWidth="500" MinWidth="180"/>
+                <ColumnDefinition Width="300" MaxWidth="500" MinWidth="200"/>
             </Grid.ColumnDefinitions>
-
-            <!-- Left Navigation Sidebar -->
-            <Border Grid.Column="0" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,0,1,0" Padding="4,8">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="28"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="This PC" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="14,0"/>
+                    <TextBlock Grid.Row="0" Text="This PC" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="12,0"/>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Drives}" BorderThickness="0" Background="Transparent" Padding="4"
-                             HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Drives}" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Button Style="{StaticResource DriveItemButtonStyle}"
+                                <Button Style="{StaticResource SidebarDriveButton}"
                                         Command="{Binding DataContext.OpenDriveCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                         CommandParameter="{Binding}">
                                     <Grid HorizontalAlignment="Stretch">
@@ -195,7 +219,7 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <Image Grid.Column="0" Source="{Binding Icon}" Width="18" Height="18" Margin="0,0,10,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontSize="12.5" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
                                     </Grid>
                                 </Button>
                             </DataTemplate>
@@ -203,9 +227,7 @@
                     </ListBox>
                 </Grid>
             </Border>
-
-            <!-- Center View (Modern Details File View) -->
-            <Grid Grid.Column="1" Background="{DynamicResource BgPanel}">
+            <Border Grid.Column="1" Background="{DynamicResource BgMain}" Padding="6">
                 <ListView ItemsSource="{Binding Items}"
                           SelectedItem="{Binding SelectedItem}"
                           SelectionMode="Extended"
@@ -221,13 +243,13 @@
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="Padding" Value="4,6"/>
-                            <Setter Property="Margin" Value="2,1"/>
+                            <Setter Property="Padding" Value="8,6"/>
+                            <Setter Property="Margin" Value="0,1"/>
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
                                             <GridViewRowPresenter VerticalAlignment="Center"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
@@ -263,7 +285,6 @@
 
                     <ListView.View>
                         <GridView>
-                            <!-- ستون نام -->
                             <GridViewColumn Width="280">
                                 <GridViewColumn.Header>
                                     <Button Content="Name" Style="{StaticResource SortableHeaderButton}" 
@@ -280,7 +301,6 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <!-- ستون نوع -->
                             <GridViewColumn Width="110">
                                 <GridViewColumn.Header>
                                     <Button Content="Type" Style="{StaticResource SortableHeaderButton}" 
@@ -294,7 +314,6 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <!-- ستون سایز -->
                             <GridViewColumn Width="100">
                                 <GridViewColumn.Header>
                                     <Button Content="Size" Style="{StaticResource SortableHeaderButton}" 
@@ -308,22 +327,7 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <!-- ستون تاریخ ساخت -->
-                            <GridViewColumn Width="135">
-                                <GridViewColumn.Header>
-                                    <Button Content="Date Created" Style="{StaticResource SortableHeaderButton}" 
-                                            Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
-                                            CommandParameter="CreatedDate"/>
-                                </GridViewColumn.Header>
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding CreatedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-
-                            <!-- ستون تاریخ تغییر -->
-                            <GridViewColumn Width="135">
+                            <GridViewColumn Width="140">
                                 <GridViewColumn.Header>
                                     <Button Content="Date Modified" Style="{StaticResource SortableHeaderButton}" 
                                             Command="{Binding DataContext.SortCommand, RelativeSource={RelativeSource AncestorType=ListView}}" 
@@ -331,25 +335,22 @@
                                 </GridViewColumn.Header>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding ModifiedDate, StringFormat={}{0:yyyy/MM/dd  HH:mm}}" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Text="{Binding ModifiedDate, StringFormat={}{0:yyyy/MM/dd HH:mm}}" VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>
-            </Grid>
+            </Border>
 
-            <!-- Splitter -->
             <GridSplitter Grid.Column="2" Width="2" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="{DynamicResource BorderColor}"/>
-
-            <!-- Right Sidebar (Preview Panel) -->
             <Border Grid.Column="3" 
-                    Background="{DynamicResource BgPreview}" 
+                    Background="{DynamicResource BgPanel}" 
                     BorderBrush="{DynamicResource BorderColor}" 
                     BorderThickness="1,0,0,0"
                     Visibility="{Binding IsPreviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Grid Margin="12">
+                <Grid Margin="16">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -361,48 +362,43 @@
                     <TextBlock Grid.Row="1" 
                                Text="{Binding SelectedItem.Name}" 
                                FontWeight="SemiBold" 
-                               FontSize="13" 
+                               FontSize="14" 
                                Foreground="{DynamicResource TextPrimary}"
                                TextTrimming="CharacterEllipsis" 
-                               Margin="0,0,0,12"/>
+                               Margin="0,0,0,16"/>
 
-                    <!-- Image Preview -->
-                    <Border Grid.Row="2" CornerRadius="4" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="4"
+                    <Border Grid.Row="2" CornerRadius="8" Background="{DynamicResource BgMain}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="8"
                             Visibility="{Binding IsImagePreview, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <Image Source="{Binding PreviewImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="LowQuality"/>
+                        <Image Source="{Binding PreviewImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
                     </Border>
 
-                    <!-- Text Preview -->
-                    <Border Grid.Row="2" CornerRadius="4" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="6"
+                    <Border Grid.Row="2" CornerRadius="8" Background="{DynamicResource BgMain}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="8"
                             Visibility="{Binding IsTextPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding PreviewText}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
+                            <TextBox Text="{Binding PreviewText}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontFamily="Consolas, Cascadia Code" FontSize="12" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
                         </ScrollViewer>
                     </Border>
 
-                    <!-- Media Preview -->
-                    <Border Grid.Row="2" CornerRadius="4" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="12"
+                    <Border Grid.Row="2" CornerRadius="8" Background="{DynamicResource BgMain}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Padding="16"
                             Visibility="{Binding IsMediaPreview, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="📄" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                            <TextBlock Text="{Binding SelectedItem.Type, StringFormat={}{0} File}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="{Binding SelectedItem.SizeText}" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                            <TextBlock Text="&#xE8A5;" Style="{StaticResource FluentIcon}" FontSize="48" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,12"/>
+                            <TextBlock Text="{Binding SelectedItem.Type, StringFormat={}{0} File}" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="{Binding SelectedItem.SizeText}" FontSize="12" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                         </StackPanel>
                     </Border>
                 </Grid>
             </Border>
         </Grid>
-
-        <!-- Status Bar -->
-        <Border Grid.Row="2" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0">
-            <Grid Margin="10,0">
+        <Border Grid.Row="2" Background="{DynamicResource BgPanel}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0">
+            <Grid Margin="12,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
-                <ProgressBar Grid.Column="1" Height="6" Width="100" Value="{Binding OperationProgress}" Visibility="{Binding IsOperationRunning, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" Text="{Binding StatusText}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                <ProgressBar Grid.Column="1" Height="4" Width="120" Value="{Binding OperationProgress}" Visibility="{Binding IsOperationRunning, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center"/>
             </Grid>
         </Border>
     </Grid>
